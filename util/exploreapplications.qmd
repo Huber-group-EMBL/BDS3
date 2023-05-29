@@ -1,0 +1,47 @@
+---
+title: "BDS^3 2023 applicants selection"
+author: "Wolfgang Huber"
+format: html
+---
+
+
+```{r}
+#| label: global_options
+#| echo: false
+knitr::opts_chunk$set(cache = FALSE)
+options(error = recover)
+```
+
+```{r}
+#| label: setup
+#| message: FALSE
+library("dplyr")
+library("ggplot2")
+```
+
+```{r}
+#| label: read
+#| message: FALSE
+x = readr::read_csv("../Downloads/BDS^3 Applications - Form responses 1.csv")
+x = dplyr::filter(x, !grepl("Dnipro", x$`Fedya score`) & !is.na(Timestamp))
+dim(x)
+x = mutate(x, 
+  `Helena score` = as.numeric(sub("1/2", "1.5", sub("0/1", "0.5", `Helena score`))),
+  `Julia score` = as.numeric(`Julia score`)
+)
+with(x, table(`Julia score`, `Helena score`, useNA = "ifany"))
+```
+If we select those on the lower right that fullfil the below criteria,
+```{r}
+x = mutate(x,
+  select = ifelse( (`Julia score` >= 1 & `Helena score` >= 0.5) |
+                   (`Julia score` >= 0 & `Helena score` >= 1), 100, 0) 
+)
+table(x$select > 0, useNA = "ifany")
+```
+then we get `r sum(x$select > 0, na.rm = TRUE)`. I guess we can invite these right away.
+I suggest we now in particular look at some of the marginal cases (Julia 1, Helena 0; Julia 0, Helena 0.5), and generate a ranked list of 10 or more of these for the waiting list. Let's make sure we give a nice explanation  to those we cannot invite. ("lots of excellent applications, unfortunately we had limited number of places, hoping for you it works another time, please don't give up.")
+
+```{r}
+filter(x, is.na(select))[, c(4,5)]
+```
