@@ -4,6 +4,7 @@ author: "Wolfgang Huber"
 format: 
   html:
    df-print: paged
+   embed-resources: true
 ---
 
 
