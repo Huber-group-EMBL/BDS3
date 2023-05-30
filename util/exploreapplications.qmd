@@ -1,7 +1,9 @@
 ---
 title: "BDS^3 2023 applicants selection"
 author: "Wolfgang Huber"
-format: html
+format: 
+  html:
+   df-print: paged
 ---
 
 
@@ -22,26 +24,44 @@ library("ggplot2")
 ```{r}
 #| label: read
 #| message: FALSE
-x = readr::read_csv("../Downloads/BDS^3 Applications - Form responses 1.csv")
+x = readr::read_csv("BDS^3 Applications - Form responses 1.csv")
 x = dplyr::filter(x, !grepl("Dnipro", x$`Fedya score`) & !is.na(Timestamp))
 dim(x)
+colnames(x) = sub(" score", "", colnames(x))
 x = mutate(x, 
-  `Helena score` = as.numeric(sub("1/2", "1.5", sub("0/1", "0.5", `Helena score`))),
-  `Julia score` = as.numeric(`Julia score`)
+  Helena   = as.numeric(sub("1/2", "1.5", sub("0/1", "0.5", Helena))),
+  Julia    = as.numeric(Julia),
+  Wolfgang = as.numeric(Wolfgang)
 )
-with(x, table(`Julia score`, `Helena score`, useNA = "ifany"))
+with(x, table(Julia, Helena, useNA = "ifany"))
+otherscores = c("Wolfgang", "Roderic", "Fedya", "Lada")
+lapply(otherscores, function(j) with(x, table(Julia, Helena, get(j)))) |> setNames(otherscores)
 ```
-If we select those on the lower right that fullfil the below criteria,
-```{r}
-x = mutate(x,
-  select = ifelse( (`Julia score` >= 1 & `Helena score` >= 0.5) |
-                   (`Julia score` >= 0 & `Helena score` >= 1), 100, 0) 
-)
-table(x$select > 0, useNA = "ifany")
-```
-then we get `r sum(x$select > 0, na.rm = TRUE)`. I guess we can invite these right away.
-I suggest we now in particular look at some of the marginal cases (Julia 1, Helena 0; Julia 0, Helena 0.5), and generate a ranked list of 10 or more of these for the waiting list. Let's make sure we give a nice explanation  to those we cannot invite. ("lots of excellent applications, unfortunately we had limited number of places, hoping for you it works another time, please don't give up.")
+
+Some scoring arithmetics. The first row (value 100) are the ones definitively selected.
 
 ```{r}
-filter(x, is.na(select))[, c(4,5)]
+x$select = rep(0, nrow(x))
+x$select[(x$Julia>=1 & x$Helena>=0)   | (x$Julia>=0 & x$Helena>=0.5)] =  30
+x$select[(x$Julia>=1 & x$Helena>=0.5) | (x$Julia>=0 & x$Helena>=1)  ] = 100 
+x$select[ x$select == 30 & x$Wolfgang > 0 ] = 60
+
+table(x$select, useNA = "ifany")
+```
+We can invite the `r sum(x$select==100, na.rm = TRUE)` with score 100 based on Helena's and Julia's scores right away.
+For those that got 30 based on Helena's and Julia's scores (Julia 1, Helena 0; Julia 0, Helena 0.5), Wolfgang had a look, and suggests picking another `r sum(x$select==60, na.rm = TRUE)`.
+
+Let's make sure we give a nice explanation  to those we cannot invite. ("lots of excellent applications, unfortunately we had limited number of places, hoping for you it works another time, please don't give up.")
+
+```{r}
+#| results: markup 
+fn = sprintf("Selection %s", format(Sys.time()))
+openxlsx2::write_xlsx(
+  filter(x, select >= 60) |> arrange(-select), 
+  file = paste0(fn, ".xlsx"), colNames = TRUE, sheetName = fn, creator = "Wolfgang Huber"
+)
+```
+
+```{r}
+filter(x, is.na(select))
 ```
