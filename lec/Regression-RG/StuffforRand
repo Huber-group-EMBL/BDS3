@@ -1,0 +1,46 @@
+
+ For Variables:
+  https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/BPQ_I.htm
+
+  https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DIQ_I.htm
+
+#  Variables and the tables they come from:
+# this code needs to run in the docker container then the data are exported to here
+
+  library("phonto")
+  cols =   list( DEMO_I=c("RIDAGEYR","RIAGENDR","RIDRETH1","DMDEDUC2","years", 
+                           "WTINT2YR", "SDMVPSU", "SDMVSTRA", "INDFMPIR"), 
+            BPQ_I=c('BPQ050A','BPQ020','BPQ080','BPQ100D'),
+            HDL_I=c("LBDHDD"),
+            GHB_I="LBXGH",
+            DIQ_I=c("DIQ010","DIQ050","DIQ070","DIQ160"),
+            BMX_I="BMXBMI", 
+            TCHOL_I="LBXTC")
+ data = jointQuery(cols)
+
+ d2 = nhanesTranslate("DEMO_I", colnames=c("RIAGENDR","RIDRETH1","DMDEDUC2"), data =data)
+ d3 = nhanesTranslate("BPQ_I", colnames=c('BPQ050A','BPQ020','BPQ080','BPQ100D'), data=d2)
+ d4 = nhanesTranslate("DIQ_I", colnames=c("DIQ010","DIQ050","DIQ070","DIQ160"), data=d3)
+
+ save(d4, file="/mnt/projects/d4.rda", compress="xz")
+
+  https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/XXX_I.htm
+
+ and that gets you the description.
+
+  One proposal for a "big question" is what factors affect whether someone is on a
+ hypertensive drug or a cholesterol lowering drug?
+   - does age have anything to do with it?
+   - ethnicity?
+   - BMI?
+
+  and so on.
+
+  Second question, is how well do these drugs work?  So if someone is taking a hypertensive
+med, how does their blood pressure (either systolic or diastolic) differ from those without the drug?
+  Does it matter if the person was diagnosed with hypertension?
+
+  Does the effect of the drug depend on age or ethnicity?
+
+
+  
