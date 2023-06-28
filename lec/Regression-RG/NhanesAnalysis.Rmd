@@ -18,7 +18,7 @@ There are 6063 observations, some are incomplete and have missing values for som
 We load up the data and the metadata. In the metadata we have a textual description of the phenotype, the short name, and the target.  The target tells us which of the sampled individuals was eligible to answer the question. 
 
 ```{r loadData}
-nhanesDataPath = "nhanesData/"
+nhanesDataPath = ""
 load(paste0(nhanesDataPath, "d4.rda"))
 load(paste0(nhanesDataPath, "metaD.rda")) 
 DT::datatable(metaD)

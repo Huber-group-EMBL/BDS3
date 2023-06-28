@@ -8,18 +8,16 @@ editor: visual
 
 ## Multivariate Regression
 
-- in the last lecture we considered the problem of simple linear regression, where we had one $x$ variable and a response, $y$, that we want to try to understand in the context of $x$
-- now we want to consider a much more complex situation, one where there are many (sometimes millions or tens of millions)
-
+-   in the last lecture we considered the problem of simple linear regression, where we had one $x$ variable and a response, $y$, that we want to try to understand in the context of $x$
+-   now we want to consider a much more complex situation, one where there are many (sometimes millions or tens of millions)
 
 ## Multiple linear regression
 
-- a per case model
-$$
-y_i = \beta_0 + \beta_1 \cdot x_1 + \ldots + \beta_k \cdot x_k + \epsilon_i
-$$
-- a matrix/vector version of the model
-- in that model we have $n$ observations on $k$ variables, so $\bf{X}$ is an $n \times k$ matrix
+-   a per case model $$
+    y_i = \beta_0 + \beta_1 \cdot x_1 + \ldots + \beta_k \cdot x_k + \epsilon_i
+    $$
+-   a matrix/vector version of the model
+-   in that model we have $n$ observations on $k$ variables, so $\bf{X}$ is an $n \times k$ matrix
 
 $$
   \bf{Y} = \bf{X}^\prime \bf{\beta} + \bf{\epsilon}
@@ -27,18 +25,18 @@ $$
 
 ## Data
 
-- for this section we will consider a portion of a very large complex data set
-- the National Health and Nutrition Examination Survey (NHANES)
-- designed to assess the health and nutritional status of adults and children in the United States
-- done in two year cycles since 1999
-- we will look at a small proportion of the data from the 2015-2016 cycle
+-   for this section we will consider a portion of a very large complex data set
+-   the National Health and Nutrition Examination Survey (NHANES)
+-   designed to assess the health and nutritional status of adults and children in the United States
+-   done in two year cycles since 1999
+-   we will look at a small proportion of the data from the 2015-2016 cycle
 
 ## Some R code
 
-Loading up some data from 
+Loading up some data from
+
 ```{r}
-nhanesDataPath = "nhanesData/"
-load(paste0("nhanesDataPath", "d4.rda")
+load("d4.rda")
 lm1 = lm(d4$LBXTC ~ d4$RIDAGEYR)
 summary(lm1)
 
@@ -51,10 +49,10 @@ abline(h=0, col="red")
 ```
 
 ## Description of data
-For Variables:
-  <https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/BPQ_I.htm>
 
-  <https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DIQ_I.htm>
+For Variables: <https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/BPQ_I.htm>
+
+<https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DIQ_I.htm>
 
 ```{r}
 #| eval: false
