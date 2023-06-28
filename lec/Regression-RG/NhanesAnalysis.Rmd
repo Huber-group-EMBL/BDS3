@@ -1,0 +1,230 @@
+---
+title: "NHANES"
+author: "RG"
+date: "2023-06-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("splines")
+library("DT")
+```
+
+## Load the data
+
+There are 6063 observations, some are incomplete and have missing values for some covariates. There are 22 covariates, which have cryptic names and you need to use the meta-data to resolve them.  The survey is very complex and typically any analysis requires a substantial amount of reading of the documentation.  Here we will guide you past some of the hurdles.
+
+We load up the data and the metadata. In the metadata we have a textual description of the phenotype, the short name, and the target.  The target tells us which of the sampled individuals was eligible to answer the question. 
+
+```{r loadData}
+nhanesDataPath = "nhanesData/"
+load(paste0(nhanesDataPath, "d4.rda"))
+load(paste0(nhanesDataPath, "metaD.rda")) 
+DT::datatable(metaD)
+```
+
+We will look at the relationship between the variable LBXTC (which is Total Cholesterol in mg/dL measured by a blood draw) and the age of the participant in years. 
+
+```{r, echo=FALSE}
+plot(d4$RIDAGEYR, d4$LBXTC, xlab="Age in Years", ylab="Total Cholesterol, mg/dL")
+```
+
+And we can see that plotting, over-plotting is a substantial issue here.
+You might also notice what seems like a lot of data at age 80, this is because any age over 80 was truncated to 80 to prevent reidentification of survey participants. In a complete analysis, this should probably be adjusted for in some way, but we will ignore it for now.
+
+We can try some other methods, such as `hexbin` plotting and `smoothScatter`
+
+```{r, echo=FALSE}
+smoothScatter(d4$RIDAGEYR, d4$LBXTC, xlab="Age in Years", ylab="Total Cholesterol, mg/dL")
+```
+
+Now we can see a few outliers - with extremely high serum cholesterol.
+We get a sense that the trend is not exactly a straight line, but rather a parabola, lower for the young and the old and a bit higher in the middle.
+
+We fit a linear model first.
+
+```{r}    
+lm1 = lm(d4$LBXTC ~ d4$RIDAGEYR)
+summary(lm1)
+```
+
+```{r, echo=TRUE}
+plot(lm1$fitted.values, lm1$residuals)
+##fit a loess curve
+l2 = loess(lm1$residuals ~ lm1$fitted.values)
+pl = predict(l2, newdata=sort(lm1$fitted.values))
+lines(x=sort(lm1$fitted.values), y=pl, col="blue", lwd=2)
+abline(h=0, col="red")
+
+```
+
+Notice that both terms in the model are very significant, but that the multiple $R^2$ is only around 2%.  So age, in years, is not explaining very much of the variation. But because we have such a large data set, the parameter estimates are found to be significantly different from zero.
+
+## Spline Models
+
+- when a linear model does not appear sufficient we can try other models.
+- one choice is to use natural splines, which are very flexible
+- they are based on B-splines with the previso that the model is linear outside the range of the data
+- based on the initial analysis, we chose to use df=7, which gives five internal knots when fitting the splines
+- you have almost 6,000 degrees of freedom here, so using up a few to get a more appropriate fit seems good.
+
+```{r}
+library("splines")
+lm2 = lm(d4$LBXTC ~ ns(d4$RIDAGEYR, df=7))
+summary(lm2)
+```
+
+
+- we can use standard tools for comparing models
+```{r}
+anova(lm1, lm2)
+```
+
+Notice also that the multiple $R^2$ went up to about 10%, a pretty substantial increase, suggesting that the curvilinear nature of the relationship is substantial.
+
+The residual standard error also decreased by about 5%.
+
+We have lost the simple explanation that comes from fitting a linear model. We cannot say that your serum cholesterol increases by $a$ units per year, but that model was wrong, so it really shouldn't be used.
+
+We can use the regression model we fit to make predictions for any one, and these are substantially more accurate.
+
+
+## Spline Models
+
+- even though the regression summary prints out a different row for each spline term, they are not independent variables, and you need to either retain them all, or retain none of them
+
+## Sex
+
+- next we might want to start to add other variables and explore the different relationships.
+- let's consider sex, for now we will leave out age, and just try to understand what happens with sex
+- first I will fit the model without an intercept
+
+```{r}
+lm3 = lm(LBXTC ~ RIAGENDR-1, data=d4)
+summary(lm3)
+
+```
+
+- here we can see the mean for males is a bit higher than for females
+- both are significant and notice how large the multiple $R^2$ value is
+- this is not a very interesting test - we are asking if the mean is zero, which isn't even physically possible
+- our model is
+$$
+  y_i = \beta_M \cdot 1_{M,i} + \beta_F \cdot 1_{F,i}
+$$
+- where $1_{M,i}$ is 1 if the $i^{th}$ case is male and zero otherwise, similarly for $1_{F,i}$
+
+- instead we ask if the mean for males is different than that for females
+$$ 
+  y_i = \beta_0 + \beta_1 \cdot 1_{F,i}
+$$
+
+- so that $E[Y|M] = \beta_0$ and $E[Y|F] = \beta_0 + \beta_1$
+- $\beta_1$ estimates the difference in mean between male and female
+
+
+```{r}
+lm3 = lm(LBXTC ~ RIAGENDR, data=d4)
+summary(lm3)
+
+```
+
+- now we see an Intercept term (that will be the overall mean)
+- and the estimate for females is represents how they differ, if it is zero then there is no difference in total cholesterol between men and women
+
+## Look at more variables
+
+- now we will put together a set of features (variables) that we are interested in
+- for simplicity we only keep partipants for which we have all the data
+
+```{r}
+ivars = c("RIDAGEYR", "RIAGENDR", "RIDRETH1", "DMDEDUC2", "INDFMPIR", "LBDHDD", "LBXGH", "BMXBMI", "LBXTC")
+
+d4sub = d4[,ivars]
+compCases = apply(d4sub, 1, function(x) sum(is.na(x)))
+cC = compCases==0
+d4sub = d4sub[cC,]
+dim(d4sub)
+
+```
+
+##One quick transformation
+
+- the variable `DMDEDUC2` is a bit too granular for our purposes
+- we will modify it to be, less than high school, high school and more than high school
+
+```{r}
+table(d4sub$DMDEDUC2)
+dd = d4sub$DMDEDUC2
+
+dd[dd=="Don't Know"] = NA
+
+eduS = ifelse(dd == "Less than 9th grade" | dd =="9-11th grade (Includes 12th grade with no diploma)", "<HS", ifelse(dd == "High school graduate/GED or equivalent", "HS", ">HS" ))
+
+#stick this into our dataframe
+#and drop the NA
+d4sub$eduS = eduS
+d4sub = d4sub[-which(is.na(eduS)), ]
+
+table(eduS, dd, useNA = "always")
+```
+
+## Principle Components
+
+- we can take the continuous variables and look at principle components
+- plotting the first two PCs suggest that these directions are dominated by outliers and that a good step in our analysis might be to remove them
+```{r}
+cvars = c("RIDAGEYR", "INDFMPIR", "LBDHDD", "LBXGH", "BMXBMI", "LBXTC")
+contd4sub=d4sub[, cvars]
+pcs = prcomp(contd4sub)
+
+##based on pc plot we have at least 3 outliers that are dominating the first 2 pcs
+contd4sub = contd4sub[-c(1077, 2876, 2933),]
+d4sub = d4sub[-c(1077, 2876, 2933),]
+pcs = prcomp(contd4sub)
+
+##which(abs(pcs$x[,1]) > 300)
+##which(abs(pcs$x[,2]) > 100)
+```
+
+
+## Random Forests
+
+- Random Forests are a simple way to get a sense of how important different variables are in predicting a variable of interest.
+- we will cover Random Forests in some detail in our AI/ML lecture for now we will just apply them
+
+```{r}
+library("randomForest")
+rf1 = randomForest(LBXTC ~ ., proximity=TRUE, data=d4sub)
+varImpPlot(rf1)
+```
+
+
+## Back to Regression
+
+```{r}
+lmF = lm(LBXTC ~ ., data=d4sub)
+summary(lmF)
+```
+
+ We see that being Non-hispanic black seems to have a pretty big effect, so we might want to just include that, and group all other ethnicities together
+ Education level seems to have little to add, we can drop those.
+ 
+It might be good to get a sense of the relationship with the poverty level variable.
+
+```{r}
+ Black = ifelse(d4sub$RIDRETH1 == "Non-Hispanic Black", "B", "nonB")
+ ivars = c("RIDAGEYR", "INDFMPIR", "LBDHDD", "LBXGH", "BMXBMI", "LBXTC")
+
+ d5sub = cbind(d4sub[,ivars], Black)
+ lmFx = lm(LBXTC ~ . , data=d5sub)
+ summary(lmFx)
+ 
+ ```
+ 
+ 
+ ```{r}
+ 
+ 
+ ```
