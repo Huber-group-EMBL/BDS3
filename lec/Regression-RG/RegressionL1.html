@@ -649,6 +649,9 @@ F-statistic: 59.15 on 1 and 18 DF,  p-value: 4.275e-07</code></pre>
 <li>all of that inference is dependent on the model being correct</li>
 <li>if the linear model does not fit the data, then the <span class="math inline">\(\beta\)</span>’s are not meaningful, the variance cannot be estimated, we cannot correctly assess whether or not the covariate(s) x(’s) help to predict <span class="math inline">\(y\)</span></li>
 </ul>
+</section>
+<section id="anscombes-quartet" class="slide level2">
+<h2>Anscombe’s Quartet</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
 <p><img data-src="Anscombe.png"></p>
@@ -699,9 +702,17 @@ e_i = y_i - \hat{y}_i
 </ul></li>
 <li>look for trends, increasing or decreasing variability (fans)</li>
 <li>outliers - but more on that in a later lecture</li>
-<li>when data are collected over time, we sometimes look for relationships between successive residuals - eg plot <span class="math inline">\(\hat{y}_i\)</span> versus <span class="math inline">\(\hat{y}_{i-1}\)</span></li>
+<li>when data are collected over time, we sometimes look for relationships between successive residuals</li>
+<li>when you don’t have much data don’t over interpret</li>
 </ul>
 </section>
+<section id="residual-plots-1" class="slide level2">
+<h2>Residual Plots</h2>
+<ul>
+<li>we return to our child birth example</li>
+</ul>
+
+<img data-src="RegressionL1_files/figure-revealjs/residplots-1.png" width="960" class="r-stretch"></section>
 <section id="extensions---non-linear-models" class="slide level2">
 <h2>Extensions - non-linear models</h2>
 <ul>

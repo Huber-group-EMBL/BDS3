@@ -6,13 +6,12 @@ format:
 editor: visual
 ---
 
-
 ## Introduction {.smaller}
 
 ```{r}
 #| echo: false
 
-dataPath = "WSdata/Ch12data/"
+dataPath = "Ch12data/"
 ```
 
 -   Regression comes in many forms.
@@ -57,6 +56,7 @@ plot(infdeath$breast, infdeath$death, xlab="% Breast Feeding",
      cex.lab=1.5)
 dev.off()
 ```
+
 This suggests that longer time breast feeding leads to greater infant mortality.
 :::
 
@@ -73,32 +73,35 @@ plot(infdeath$safe, infdeath$breast, ylab="% Breast Feeding",
      cex.lab=1.5)
 dev.off()
 ```
+
 Countries with access to safe water breast feed for less time.
 :::
 :::
 
 ## Causation
 
-- often, as in the example above, there is a third variable (clean water) that affects both the response and the predictor
-- to get at causation we typically need a randomized controlled experiment
-- we cannot always do experiments, eg most epidemiology
+-   often, as in the example above, there is a third variable (clean water) that affects both the response and the predictor
+-   to get at causation we typically need a randomized controlled experiment
+-   we cannot always do experiments, eg most epidemiology
 
 ## Linear Regression {.smaller}
 
--   We want to relate the response, $y$ to the predictor $x$ using a straight line model 
+-   We want to relate the response, $y$ to the predictor $x$ using a straight line model
 
     $y = \beta_0 + \beta_1 \cdot x + \epsilon$
-    
-- in this model $\beta_0$ is the intercept - the value that $y$ takes when $x=0$
-- $\beta_1$ is the slope of the line, relating $x$ to $y$ and can be interpreted as the average change in $y$ for a one unit change in $x$
-- $\epsilon$ represents the inherent variability in the system, it is assumed to be zero on average
-- some of the statistical theory is easier if you assume that $\epsilon$'s come as independent observations with the same distribution (*i*.*i*.*d*), but this is not essential
+
+-   in this model $\beta_0$ is the intercept - the value that $y$ takes when $x=0$
+
+-   $\beta_1$ is the slope of the line, relating $x$ to $y$ and can be interpreted as the average change in $y$ for a one unit change in $x$
+
+-   $\epsilon$ represents the inherent variability in the system, it is assumed to be zero on average
+
+-   some of the statistical theory is easier if you assume that $\epsilon$'s come as independent observations with the same distribution (*i*.*i*.*d*), but this is not essential
 
 ## Plot the data {.smaller}
 
-:::: columns
+::: columns
 ::: {.column width="50%"}
-
 ```{r}
 #| echo: false
 #| fig-align: "center"
@@ -113,19 +116,16 @@ abline(lm1, col="blue")
 ```
 :::
 
-::: {.column width="50%"} 
-
-- the intercept is about -27
-- the slope is about 1.5
-- interpret these....
-
+::: {.column width="50%"}
+-   the intercept is about -27
+-   the slope is about 1.5
+-   interpret these....
 :::
-
-::::
+:::
 
 ## Linear Regression
 
-- we can easily fit this model to the data
+-   we can easily fit this model to the data
 
 ```{r}
 
@@ -134,34 +134,31 @@ summary(lm1)
 
 ```
 
-
 ## Linear Regression
 
-- we denote our estimates by putting a hat on the parameter, e.g. $\hat{\beta_0}$
-- our estimated line is the given by $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 \cdot x$
-- given a new $x$ we can then predict $y$
-- but we have to be careful about whether the new $x$ is sensible
-- how do we choose the **best** straight line?
+-   we denote our estimates by putting a hat on the parameter, e.g. $\hat{\beta_0}$
+-   our estimated line is the given by $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 \cdot x$
+-   given a new $x$ we can then predict $y$
+-   but we have to be careful about whether the new $x$ is sensible
+-   how do we choose the **best** straight line?
 
 ## Least Squares
 
-- let our *predicted values* be $\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 \cdot x_i$
+-   let our *predicted values* be $\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 \cdot x_i$
 
-- then one strategy is to minimize the sum of squared prediction errors
-$$
- \sum_{i=1}^n (y_i - \hat{y}_i)^2
-$$
+-   then one strategy is to minimize the sum of squared prediction errors $$
+     \sum_{i=1}^n (y_i - \hat{y}_i)^2
+    $$
 
-- this method is called *least squares* and was discovered by Gauss in 1822
+-   this method is called *least squares* and was discovered by Gauss in 1822
 
 ## The estimates are random...
 
-- our model says
-$$
- Y = \beta_0 + \beta_1 \cdot X + \epsilon
-$$
-- where we use $Y$ and $X$ to represent the fact that data came from some form of sample from a population we want to make inference about
-- usually we will assume $\epsilon \sim N(0, \sigma^2)$ are independent (but that is not strictly necessary)
+-   our model says $$
+     Y = \beta_0 + \beta_1 \cdot X + \epsilon
+    $$
+-   where we use $Y$ and $X$ to represent the fact that data came from some form of sample from a population we want to make inference about
+-   usually we will assume $\epsilon \sim N(0, \sigma^2)$ are independent (but that is not strictly necessary)
 
 ## Simulation Experiment
 
@@ -199,8 +196,8 @@ for( i in 1:NITER) {
 
 ```
 
-- we repeatedly sample from a Normal distribution with `sd=1.5` and create a new $y$
-- then we estimate the paramters for that model, and save them
+-   we repeatedly sample from a Normal distribution with `sd=1.5` and create a new $y$
+-   then we estimate the paramters for that model, and save them
 
 ## Plots
 
@@ -213,8 +210,8 @@ hist(b1vec)
 
 ```
 
-- $\hat{\beta}_0$ mean: `r round(mean(b0vec), digits=3)`; sd: `r round(sqrt(var(b0vec)), digits=3)`
-- $\hat{\beta}_1$ mean: `r round(mean(b1vec), digits=3)`; sd: `r round(sqrt(var(b1vec)), digits=3)`
+-   $\hat{\beta}_0$ mean: `r round(mean(b0vec), digits=3)`; sd: `r round(sqrt(var(b0vec)), digits=3)`
+-   $\hat{\beta}_1$ mean: `r round(mean(b1vec), digits=3)`; sd: `r round(sqrt(var(b1vec)), digits=3)`
 
 ## Compare with the Regression summary
 
@@ -224,106 +221,109 @@ summary(lm2)
 
 ## Inference about the model
 
-- typically the intercept is not that interesting
-- we test the hypothesis $H_0: \beta_1 = 0$ to determine whether $x$ provides any explanation of $y$
-- $R^2$ and multiple $R^2$ tell us about how much of the variation in $y$ has been captured by the terms in the model
-- the residual standard error is an estimate of $\sigma$ from the distribution of the $\epsilon_i$
+-   typically the intercept is not that interesting
+-   we test the hypothesis $H_0: \beta_1 = 0$ to determine whether $x$ provides any explanation of $y$
+-   $R^2$ and multiple $R^2$ tell us about how much of the variation in $y$ has been captured by the terms in the model
+-   the residual standard error is an estimate of $\sigma$ from the distribution of the $\epsilon_i$
 
 ## But....
 
-- all of that inference is dependent on the model being correct
-- if the linear model does not fit the data, then the $\beta$'s are not meaningful, the variance cannot be estimated, we cannot correctly assess whether or not the covariate(s) x('s) help to predict $y$
+-   all of that inference is dependent on the model being correct
+-   if the linear model does not fit the data, then the $\beta$'s are not meaningful, the variance cannot be estimated, we cannot correctly assess whether or not the covariate(s) x('s) help to predict $y$
 
-:::: columns
+## Anscombe's Quartet
 
+::: columns
 ::: {.column width="50%"}
-
 ![](Anscombe.png)
-
 :::
 
 ::: {.column width="50%"}
-
 ![](AnscombeSummary.png)
-
 :::
-
-::::
+:::
 
 ## And so...
 
-- only the top left plot represents a statistical regression model
-- the top right model represents a non-linear relationship, and one that seems to have no error
-- the bottom left plot is a straight line, with one possible recording error, but no statistical variation
-- the bottom right plot shows no relationship between $x$ and $y$ for most points, but there is one *outlier*, in both $x$ and $y$ that affects the estimated relationship
+-   only the top left plot represents a statistical regression model
+-   the top right model represents a non-linear relationship, and one that seems to have no error
+-   the bottom left plot is a straight line, with one possible recording error, but no statistical variation
+-   the bottom right plot shows no relationship between $x$ and $y$ for most points, but there is one *outlier*, in both $x$ and $y$ that affects the estimated relationship
 
 ## The hard part...
 
-- is not writing the command `lm(y~x)` - anyone could do that
-- it is ensuring that the model adequately represents the data and the relationships within it
-- once you have convinced yourself, and others, that this is true then you can interpret, test hypotheses etc
+-   is not writing the command `lm(y~x)` - anyone could do that
+-   it is ensuring that the model adequately represents the data and the relationships within it
+-   once you have convinced yourself, and others, that this is true then you can interpret, test hypotheses etc
 
 ## So how might we do that:
 
-- the residuals are defined as
-$$
- e_i = y_i - \hat{y}_i
-$$
+-   the residuals are defined as $$
+     e_i = y_i - \hat{y}_i
+    $$
 
-- we check the residuals for various behaviors
-  1. Constant spread: the $e_i$'s have about the same spread regardless of the value of $x$
-  2. Independence: Do the $e_i$'s show any signs of correlation.
-  3. Symmetry and Unimodality: Do the $e_i$'s have an approximately symmetric distribution with a single mode.
-  4. Normality: but that is often too strong a requirement 
-  
-  
+-   we check the residuals for various behaviors
+
+    1.  Constant spread: the $e_i$'s have about the same spread regardless of the value of $x$
+    2.  Independence: Do the $e_i$'s show any signs of correlation.
+    3.  Symmetry and Unimodality: Do the $e_i$'s have an approximately symmetric distribution with a single mode.
+    4.  Normality: but that is often too strong a requirement
+
 ## Residual Plots
 
-- plot the residuals ($y$-axis) against:
-  - any covariates ($x$'s)
-  - the predicted values ($\hat{y}$'s)
+-   plot the residuals ($y$-axis) against:
+    -   any covariates ($x$'s)
+    -   the predicted values ($\hat{y}$'s)
+-   look for trends, increasing or decreasing variability (fans)
+-   outliers - but more on that in a later lecture
+-   when data are collected over time, we sometimes look for relationships between successive residuals 
+- when you don't have much data don't over interpret
 
-- look for trends, increasing or decreasing variability (fans)
-- outliers - but more on that in a later lecture
-- when data are collected over time, we sometimes look for relationships between successive residuals - eg plot $\hat{y}_i$ versus $\hat{y}_{i-1}$
+
+## Residual Plots
+
+- we return to our child birth example
+```{r residplots, echo=FALSE}
+par(mfrow=c(1,2))
+plot(lm1$fitted.values, lm1$residuals, xlab="Fitted Values", ylab="Residuals")
+abline(h=0)
+plot(lm1$model$`infdeath$breast`, lm1$residuals, xlab="Proportion of Mothers Breastfeeding at 6mo", ylab="Residuals")
+abline(h=0)
+```
 
 ## Extensions - non-linear models
 
-- fitting straight lines is fine, most of the time
-- we know that complex relationships can be approximated by a straight line over a restricted set of values
-- we can add polynomials in our covariates
-$$
-  y = \beta_0 + \beta_1 \cdot x + \beta_2 \cdot x^2 + \epsilon
-$$
-- these models have very strong assumptions and the effect of the polynomial terms on the fit can be large
+-   fitting straight lines is fine, most of the time
+-   we know that complex relationships can be approximated by a straight line over a restricted set of values
+-   we can add polynomials in our covariates $$
+    y = \beta_0 + \beta_1 \cdot x + \beta_2 \cdot x^2 + \epsilon
+    $$
+-   these models have very strong assumptions and the effect of the polynomial terms on the fit can be large
 
 ## Extensions: non-linear models
 
-- a straight line model is appropriate if $y$ changes by a fixed amount for every unit change in $x$
-- an exponential curve represents the case where $y$ changes by a fixed percentage (or proportion) for every unit change in $x$
-- many economic models are exponential
-- the exponential model:
-$$
- y = a \cdot e^{bx} \\
- ln(y) = ln(a) + b \cdot x
-$$
+-   a straight line model is appropriate if $y$ changes by a fixed amount for every unit change in $x$
+-   an exponential curve represents the case where $y$ changes by a fixed percentage (or proportion) for every unit change in $x$
+-   many economic models are exponential
+-   the exponential model: $$
+     y = a \cdot e^{bx} \\
+     ln(y) = ln(a) + b \cdot x
+    $$
 
 ## Extensions - non-linear models
 
-- so we see that we can fit an exponential model with linear regression if we *transform* $y$
-- there are many other transformations of $y$ that could be used and an extensive literature on choosing the best ones (Box-Cox transformation)
-- a transformation of $y$ will in general not just effect the mean relationship but it also affects the variability in your $y$ values as a function of $x$
+-   so we see that we can fit an exponential model with linear regression if we *transform* $y$
+-   there are many other transformations of $y$ that could be used and an extensive literature on choosing the best ones (Box-Cox transformation)
+-   a transformation of $y$ will in general not just effect the mean relationship but it also affects the variability in your $y$ values as a function of $x$
 
 ## Exponential models with different error assumptions
 
-
-- the models are not the same 
-- we would need the error to be multiplicative in M1 for them to be the same
-$$
- M1: y = a \cdot e^{bx} + \epsilon \\
- M2: ln(y) = ln(a) + b \cdot x + \epsilon \\
- \epsilon \sim N(0, \sigma^2)
-$$
+-   the models are not the same
+-   we would need the error to be multiplicative in M1 for them to be the same $$
+     M1: y = a \cdot e^{bx} + \epsilon \\
+     M2: ln(y) = ln(a) + b \cdot x + \epsilon \\
+     \epsilon \sim N(0, \sigma^2)
+    $$
 
 ## Plots
 
@@ -340,20 +340,20 @@ plot(x, log(m1v), pch=19, xlab="x", ylab = "log(y-hat)", main="M1 transformed")
 plot(x,m2v, pch=19, xlab="x", ylab ="log(y)-hat", main="M2")
 ```
 
-
 ## Prediction and Prediction intervals
 
-- there are two kinds of predictions that are interesting
-  - *confidence interval*: predict the mean response for a given value of $x$; 
-  - *prediction interval*: predict the value of the response $y$ for an individual whose covariate is $x$; 
-  
-- almost all regression methods in R have prediction methods associated with them, you are encouraged to use them
+-   there are two kinds of predictions that are interesting
 
-- the first of these has less variability than the second
+    -   *confidence interval*: predict the mean response for a given value of $x$;
+    -   *prediction interval*: predict the value of the response $y$ for an individual whose covariate is $x$;
+
+-   almost all regression methods in R have prediction methods associated with them, you are encouraged to use them
+
+-   the first of these has less variability than the second
 
 ## Confidence Interval vs Prediction Interval
 
-- return to our example on infant death
+-   return to our example on infant death
 
 ```{r}
 lm1 = lm(death~breast, data=infdeath)
@@ -362,18 +362,19 @@ summary(lm1)
 
 ## CI and PI
 
-- we can predict the mean response for country where 62% of the women breast feed at 6 months
+-   we can predict the mean response for country where 62% of the women breast feed at 6 months
+
 ```{r, echo=TRUE}
 predict(lm1, newdata=list(breast=62), interval="confidence")
 ```
-- or we can predict the response for a specific country where 62% of the women breast feed at 6 months
+
+-   or we can predict the response for a specific country where 62% of the women breast feed at 6 months
+
 ```{r, echo=TRUE}
 predict(lm1, newdata=list(breast=62), interval="prediction")
 ```
 
 ## Other Resources
 
-- there are lots of regression notes and examples around the web
-- <http://www.stat.ucla.edu/~dinov/courses_students.dir/02/Fall/STAT13.dir/STAT13_notes.html>
-  
-  
+-   there are lots of regression notes and examples around the web
+-   <http://www.stat.ucla.edu/~dinov/courses_students.dir/02/Fall/STAT13.dir/STAT13_notes.html>
