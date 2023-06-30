@@ -401,16 +401,15 @@ Wolfgang Huber, Susan Holmes. Updates by Helena Crowell
 
   <p class="date">2023-07-01</p>
 </section><section id="matrices-and-their-motivation" class="slide level1"><h1>Matrices and their Motivation</h1>
-<div class="cell" name="BiocFileCache">
+<div class="cell">
 
 </div>
-<p>Measure multiple variables on the same subjects. E.g., for cohort of people: biometrical characteristics such as height, weight, BMI, age; as well as clinical variables such as blood pressure, blood sugar,<br>
-heart rate. These variables will not be independent, we are interested in finding patterns between them.</p>
+<p>Measure multiple variables on the same subjects. E.g., for cohort of people: biometrical characteristics such as height, weight, BMI, age; as well as clinical variables such as blood pressure, blood sugar, heart rate. These variables will not be independent, we are interested in finding patterns between them.</p>
 <p><img data-src="resources/TheMatrix.jpg"></p>
 </section><section id="exemplary-data-sets" class="slide level1"><h1>Exemplary data sets</h1>
 <h2 id="decathlon">Decathlon</h2>
 <p>Athletes’ performances in the Olympic decathlon:<br><code>m100</code>, <code>m400</code>, <code>m1500</code> are performance times in seconds for the 100 metres, 400 metres and 1500 meters. <code>m110</code> is the time taken to finish the 110 meters hurdles. <code>pole</code> is the pole-jump height, and <code>weight</code> is the length in metres the athletes threw the weight.</p>
-<div class="cell" name="load-ath">
+<div class="cell">
 <div class="cell-output-display">
 <div class="kable-table">
 <table>
@@ -506,7 +505,7 @@ heart rate. These variables will not be independent, we are interested in findin
 </div>
 <h2 id="diabetes">Diabetes</h2>
 <p>Clinical measurements: glucose levels in the blood after fasting (<code>glufast</code>), after a test condition (<code>glutest</code>) as well as steady state plasma glucose (<code>steady</code>) and steady state (<code>insulin</code>) for diabetes. The sixth variable is categorical.</p>
-<div class="cell" name="load-diabetes">
+<div class="cell">
 <div class="cell-output-display">
 <div class="kable-table">
 <table>
@@ -659,7 +658,7 @@ measurements on the 156 most differentially expressed genes.</p>
 </div>
 <h2 id="biometrical-measurements">Biometrical Measurements</h2>
 <p>Turtles</p>
-<div class="cell" name="turtles">
+<div class="cell">
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">turtles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.table</a></span><span class="op">(</span><span class="st">"data/PaintedTurtles.txt"</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">turtles</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -702,7 +701,7 @@ measurements on the 156 most differentially expressed genes.</p>
 </div>
 </div>
 <p>Lizards</p>
-<div class="cell" name="lizards">
+<div class="cell">
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://pbil.univ-lyon1.fr/ADE-4/">"ade4"</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"lizards"</span><span class="op">)</span></span>
 <span><span class="va">lizards</span><span class="op">$</span><span class="va">traits</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span><span class="op">]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -2035,7 +2034,7 @@ decide how many axes are necessary to reproduce the signal in the data.</li>
 <li>Interpretation of PCA is facilitated by redundant<br>
 or contiguous meta-data about the observations.</li>
 </ul></section><section id="more-examples-of-supplementary-variables" class="slide level1"><h1>More examples of <br> supplementary variables</h1>
-<h2 id="one-categorical-variable-projcet-the-mean-points">One categorical variable: projcet the mean points</h2>
+<h2 id="one-categorical-variable-project-the-mean-points">One categorical variable: project the mean points</h2>
 <div class="cell">
 <div class="sourceCode" id="cb131"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va">ggbiplot</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="st">"data/wine.RData"</span><span class="op">)</span></span>
@@ -2173,7 +2172,6 @@ m1500    9.895   56.08    43.92</code></pre>
 </div>
 </div>
 <p>Contributions are printed in 1/10000 and the sign is the sign of the coordinate.</p>
-<p><img src="resources/ukraine.png" class="slide-logo"></p>
 <div class="footer footer-default">
 
 </div>

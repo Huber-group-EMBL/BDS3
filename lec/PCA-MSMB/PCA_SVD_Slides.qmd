@@ -2,12 +2,11 @@
 title: "Multivariate Analysis"
 subtitle: "BDS^3 Uzhhorod, Ukraine"
 author: "Wolfgang Huber, Susan Holmes. Updates by Helena Crowell"
-date: "July 2023"
+date: "11 July 2023"
 date-format: iso
 format:
   revealjs: 
     theme: wh.scss
-    logo: resources/ukraine.png
     transition: slide
     scrollable: true
     slide-number: c/t
@@ -39,18 +38,16 @@ options(digits=3, width=80, prompt=" ", continue=" ")
 # Matrices and their Motivation
 
 ```{r}
-#| name: BiocFileCache
+#| label: BiocFileCache
 #| echo: FALSE
 library("BiocFileCache")
-bfc = BiocFileCache(tempfile(), ask = FALSE)
+bfc = BiocFileCache(ask = FALSE)
 url = "https://www.huber.embl.de/msmb/data.tar.gz"
-untar(bfcrpath(bfc, url))
+if (!dir.exists("data"))
+   untar(bfcrpath(bfc, url))
 ```
 
-Measure multiple variables on the same subjects. E.g., for cohort of people: 
-biometrical characteristics such as height, weight, BMI, age; 
-as well as clinical variables such as blood pressure, blood sugar,  
-heart rate. These variables will not be independent, we are interested in finding patterns between them.
+Measure multiple variables on the same subjects. E.g., for cohort of people: biometrical characteristics such as height, weight, BMI, age; as well as clinical variables such as blood pressure, blood sugar, heart rate. These variables will not be independent, we are interested in finding patterns between them.
 
 ![](resources/TheMatrix.jpg)
 
@@ -65,7 +62,7 @@ Athletes’ performances in the Olympic decathlon:
 `pole` is the pole-jump height, and `weight` is the length in metres the athletes threw the weight.
     
 ```{r}
-#| name: load-ath
+#| label: load-ath
 #| echo: FALSE
 library("ade4")
 data("olympic")
@@ -79,7 +76,7 @@ format(head(athletes), digits=3, nsmall=2)
 Clinical measurements: glucose levels in the blood after fasting (`glufast`), after a test condition (`glutest`) as well as steady state plasma glucose (`steady`) and steady state (`insulin`) for diabetes. The sixth variable is categorical.
 
 ```{r}
-#| name: load-diabetes
+#| label: load-diabetes
 #| echo: FALSE
 diabetes <- read.table("data/diabetes.txt", header=TRUE, row.names=1)
 diabetes[1:4, ]
@@ -139,7 +136,7 @@ round(Msig3transp, 2)[1:5, 1:6]
 Turtles
 
 ```{r}
-#| name: turtles
+#| label: turtles
 #| echo: TRUE
 turtles <- read.table("data/PaintedTurtles.txt", header = TRUE)
 turtles[1:4, ]
@@ -148,7 +145,7 @@ turtles[1:4, ]
 Lizards
 
 ```{r}
-#| name: lizards
+#| label: lizards
 #| echo: TRUE
 library("ade4")
 data("lizards")
