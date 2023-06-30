@@ -2,22 +2,34 @@
 title: "Multivariate Analysis"
 subtitle: "BDS^3 Uzhhorod, Ukraine"
 author: "Wolfgang Huber, Susan Holmes. Updates by Helena Crowell"
-date: "July 2-14, 2023"
-execute: 
-  echo: true
-  cache: false
-  message: false
-  warning: false 
+date: "July 2023"
+date-format: iso
 format:
-  revealjs:
+  revealjs: 
+    theme: wh.scss
+    logo: resources/ukraine.png
+    transition: slide
+    scrollable: true
+    slide-number: c/t
+    show-slide-number: all
+    auto-stretch: false
+    code-line-numbers: false
+    code-copy: true
+    code-link: true
+    code-block-bg: true
+    code-block-border-left: "#31BAE9"
     dpi: 160
-    fontsize: 18pt
     df-print: kable
     fig-width: 5
     fig-height: 5
     fig-align: center
-    scrollable: true
     highlight-style: pygments
+execute: 
+  echo: true
+  warning: false
+  error: false
+  message: false
+slide-level: 1
 ---
 
 ```{r initial, include=FALSE}
@@ -26,60 +38,57 @@ options(digits=3, width=80, prompt=" ", continue=" ")
 
 # Matrices and their Motivation
 
-```{r echo=FALSE}
-library(BiocFileCache)
-bfc <- BiocFileCache(tempfile(), ask=FALSE)
-url <- "https://www.huber.embl.de/msmb/data.tar.gz"
+```{r}
+#| name: BiocFileCache
+#| echo: FALSE
+library("BiocFileCache")
+bfc = BiocFileCache(tempfile(), ask = FALSE)
+url = "https://www.huber.embl.de/msmb/data.tar.gz"
 untar(bfcrpath(bfc, url))
 ```
 
-It is current practice to measure many variables on the same patients,  
-we may have all the biometrical characteristics, height, weight, BMI,  
-age as well as clinical variables such as blood pressure, blood sugar,  
-heart rate for 100 patients, these variables will not be independent.
+Measure multiple variables on the same subjects. E.g., for cohort of people: 
+biometrical characteristics such as height, weight, BMI, age; 
+as well as clinical variables such as blood pressure, blood sugar,  
+heart rate. These variables will not be independent, we are interested in finding patterns between them.
 
 ![](resources/TheMatrix.jpg)
 
-# What are the data?
 
-- To start off, a useful toy example we’ll use is from the sports world;  
-  performances of decathlon athletes.
+# Exemplary data sets
 
-  These are measurements of athletes’ performances in the decathlon:  
-  the variables `m100`, `m400`, `m1500` are performance times in seconds for the  
-  100 metres, 400 metres and 1500 meters, respectively, `m110` is the time taken  
-  to finish the 110 meters hurdles, `pole` is the pole-jump height, and `weight`  
-  is the length in metres the athletes threw the weight.
+## Decathlon 
+
+Athletes’ performances in the Olympic decathlon:  
+`m100`, `m400`, `m1500` are performance times in seconds for the 100 metres, 400 metres and 1500 meters.
+`m110` is the time taken to finish the 110 meters hurdles.
+`pole` is the pole-jump height, and `weight` is the length in metres the athletes threw the weight.
     
-```{r loadath, echo=FALSE}
-library(ade4)
-data(olympic)
+```{r}
+#| name: load-ath
+#| echo: FALSE
+library("ade4")
+data("olympic")
 athletes <- olympic$tab
-#athletes <- scale(athletes)
-#athletes <- data.frame(athletes)
-names(athletes) <- c("m100", "long", "weight", "highj",
-    "m400", "m110", "disc", "pole", "javel", "m1500")
+names(athletes) <- c("m100", "long", "weight", "highj", "m400", "m110", "disc", "pole", "javel", "m1500")
 format(head(athletes), digits=3, nsmall=2)
 ```
 
 ## Diabetes
 
-- Clinical measurements (`diabetes` data). This data measures glucose  
-  levels in the blood after fasting (`glufast`), after a test condition  
-  (`glutest`) as well as steady state plasma glucose (`steady`) and steady  
-  state (`insulin`) for diabetes, the sixth variable is not continuous  
-  and is considered a *supplementary* variable as we will see.
+Clinical measurements: glucose levels in the blood after fasting (`glufast`), after a test condition (`glutest`) as well as steady state plasma glucose (`steady`) and steady state (`insulin`) for diabetes. The sixth variable is categorical.
 
 ```{r}
+#| name: load-diabetes
+#| echo: FALSE
 diabetes <- read.table("data/diabetes.txt", header=TRUE, row.names=1)
 diabetes[1:4, ]
 ```
 
 ## Microbial Ecology
 
-- Operational Taxon Unit read counts in a microbial ecology study;  
-  the columns represent different ‘species’ of bacteria,  
-  the rows are labeled for the samples.
+Operational Taxon Unit read counts in a microbial ecology study. Columns represent different ‘species’ of bacteria,  
+rows are labeled for the samples.
 
                      469478 208196 378462 265971 570812
         EKCM1.489478      0      0      2      0      0
@@ -90,9 +99,7 @@ diabetes[1:4, ]
         
 ## RNA-Seq
 
-- Here are some RNA-seq transcriptomic data showing numbers of mRNA  
-  reads present for different patient samples, the rows are patients  
-  and the columns are the genes.
+Numbers of reads per gene for different patient samples, rows are patients and columns are genes.
 
                    FBgn0000017 FBgn0000018 FBgn0000022 FBgn0000024 FBgn0000028 FBgn0000032
         untreated1        4664         583           0          10           0        1446
@@ -103,7 +110,7 @@ diabetes[1:4, ]
         
 ## Mass Spectroscopy
 
-- Mass spectroscopy data where we have samples containing  
+Mass spectroscopy data where we have samples containing  
   informative labels (knockout versus wildtype mice) and  
   protein $\times$ features designated by their m/z number.
 
@@ -115,11 +122,13 @@ diabetes[1:4, ]
 
 ## Expression Data (microarray)
 
-- Here the rows are samples from different subjects and different  
+Here the rows are samples from different subjects and different  
   T cell types and the columns are a subset of gene expression  
   measurements on the 156 most differentially expressed genes.
   
 ```{r}
+#| label: melanoma
+#| echo: FALSE
 # Melanoma/Tcell Data: Peter Lee, Susan Holmes, PNAS.
 load("data/Msig3transp.RData")
 round(Msig3transp, 2)[1:5, 1:6]
@@ -127,18 +136,22 @@ round(Msig3transp, 2)[1:5, 1:6]
 
 ## Biometrical Measurements
 
-- Measurements: turtles
+Turtles
 
 ```{r}
-turtles <- read.table("data/PaintedTurtles.txt", header=TRUE)
+#| name: turtles
+#| echo: TRUE
+turtles <- read.table("data/PaintedTurtles.txt", header = TRUE)
 turtles[1:4, ]
 ```
 
-- Some biological traits of lizards are available in the `ade4` package
+Lizards
 
 ```{r}
-require(ade4)
-data(lizards)
+#| name: lizards
+#| echo: TRUE
+library("ade4")
+data("lizards")
 lizards$traits[1:4, c(1,5,6,7,8)]
 ```
 
@@ -1305,7 +1318,7 @@ fviz_pca_ind(resPCAD,
 
 # More examples of <br> supplementary variables
 
-## One categorical variable: projcet the mean points
+## One categorical variable: project the mean points
 
 ```{r WineBiplot}
 require(ggbiplot)
