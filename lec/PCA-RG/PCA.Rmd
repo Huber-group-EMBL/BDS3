@@ -7,12 +7,12 @@ output: ioslides_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-library("MVT")
-library("xtable")
-library("kableExtra")
-library("sjPlot")
-library("sjmisc")
-library("sjlabelled")
+library(MVT)
+library(xtable)
+library(kableExtra)
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
 
 ```
 
@@ -341,7 +341,7 @@ plot(pcs[,4], pcs[,1], xlab="PC4", ylab="PC1", col=v1)
 ## What is going on?
 
 ```{r, echo=TRUE}
-clusters[pcs[,4]>15]
+clusters[abs(pcs[,4])>15]
 table(clusters)
 ```
 - so we see that somehow PC4 is capturing a large amount of variation with cluster 9 
@@ -406,6 +406,7 @@ plot(pcs[,6], pcs[,1], xlab="PC6", ylab="PC1", col=v1)
 smoothScatter(pcs[,6], assays(sc_exp_norm_trans)$logcount["JUN",])
 
 ```
+
 ## Zero fractions
 - Irizarry find a strong correlation between PC1 and the fraction of genes not detected 
 
@@ -417,7 +418,7 @@ smoothScatter(pcs[,6], assays(sc_exp_norm_trans)$logcount["JUN",])
 
 ##doublets?
 ```{r doublets, echo=TRUE}
-lmDoublets = lm(pc1~clusters-1+$subsets_Mito_percent)
+lmDoublets = lm(pc1~clusters-1+sc_exp_norm_trans$subsets_Mito_percent)
 ```
 ## Results
 
