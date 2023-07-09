@@ -1,0 +1,20 @@
+---
+title: "Hypothesis_testing"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("data.table")
+
+```
+
+## Read into the cell type count data 
+```{r}
+obs_tbl <- fread("/nfs/team205/vk8/processed_data/muscle/data_v3/ICM_scell2snuclei_full_meta_2023-05-31.csv")
+obs_tbl[]
+
+
+```
+
+
