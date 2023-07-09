@@ -1,0 +1,240 @@
+---
+title: "Logistic Regression"
+author: "RG"
+date: "2023-07-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Cancer and bird keeping
+
+   A 1972-1981 health survey in The Hague, Netherlands, discovered an association between keeping pet birds and increased risk of lung
+cancer.  To investigate birdkeeping as a risk factor, researchers
+conducted a _case-control_ study of patients in 1985 at four
+hospitals in The Hague (population 450,000).  They identified 49
+cases of lung cancer among the patients who were registered with a
+general practice, who were age 65 or younger and who had resided
+in the city since 1965.  They also selected 98 controls from a
+population of residents having the same general age structure.
+
+Format:
+
+     A data frame with 147 observations on the following 7 variables.
+
+     **LC** Whether subject has lung cancer
+
+     **FM** Sex of subject
+
+     **SS** Socioeconomic status, determined by occupation of the
+          household's principal wage earner
+
+     **BK** Indicator for birdkeeping (caged birds in the home for more than 6 consecutive months from 5 to 14 years before diagnosis (cases) or examination (control))
+
+     **AG** Age of subject (in years)
+
+     **YR** Years of smoking prior to diagnosis or examination
+
+     **CD** Average rate of smoking (in cigarettes per day)
+
+Source:
+
+     Ramsey, F.L. and Schafer, D.W. (2013). _The Statistical Sleuth: A
+     Course in Methods of Data Analysis (3rd ed)_, Cengage Learning.
+
+References:
+
+     Holst, P.A., Kromhout, D. and Brand, R. (1988).  For Debate: Pet
+     Birds as an Independent Risk Factor for Lung Cancer, _British
+     Medical Journal_ *297*: 13-21.
+
+
+
+```{r load, echo=TRUE}
+load("case2002.rda")
+str(case2002)
+```
+```{r modelfit}       
+     ## EXPLORATION AND MODEL BUILDING
+## recode the Birdkeeping/Lung Cancer variable
+     myCode <- ifelse(case2002$BK=="Bird" & case2002$LC=="LungCancer","Bird & Cancer", 
+       ifelse(case2002$BK=="Bird" & case2002$LC=="NoCancer","Bird & No Cancer",
+       ifelse(case2002$BK=="NoBird" & case2002$LC=="LungCancer","No Bird & Cancer", "No Bird & No Cancer")))
+table(myCode)
+table(myCode, case2002$LC, useNA="always")
+```
+
+
+- It is often useful to look at how the variables relate to each other.  Two common methods are to use a *scatter plot matrix* to
+compare continuous (or presumed continuous) variables against each other.
+```{r pairs}
+pairs(case2002[,c("AG","YR","CD")]) 
+```
+
+**Exercise**
+
+- comment on the relationship between age (AG) and years smoking (YR) [Hint: can you be a young smoker who has smoked for 40 years?]
+- what do all the zeros for YR mean?
+- notice that CD is very discrete, use the code below, and any other methods you want, to try to explain what is happening
+```{r discr, eval=FALSE}
+table(case2002$CD)
+```
+- any thoughts on the relationship between CD and YR
+
+End of Exercise
+
+Since with logistic regression we are really relating the probability that the individual is a case to the different covariages.  Another fairly useful exploratory approach is to simply divide the continuous variable into some number of groups, by value, and then just compute the proportion of cases in each group.
+
+```{r groupAge}
+ageGp = cut(case2002$AG, breaks=4)
+table(ageGp)
+##notice that this divides up the range but the groups
+## are not the same size
+q1 = quantile(case2002$AG, c(.25,.5,.75))
+q1
+ageGp2 = cut(case2002$AG, breaks=c(35, 52,59, 63, 70))
+table(ageGp2)
+##now our groups are fairly similar in size
+## we can use split to create a list of the LC values by this discrete age grouping
+spLC = split(case2002$LC, ageGp2)
+sapply(spLC, function(x) sum(x == "LungCancer")/length(x))
+
+```
+
+**Exercise**
+
+- repeat the above example for YR. You might find it easiest to make the non-smokers one group, and then for the smokers you have a more obvious interpretation.
+
+## Discrete Variables
+
+- You can compare discrete variables, or factors by examining two, or higher way way tables.
+
+```{r crosstab}
+mytab = table(case2002$FM, case2002$BK)
+mytab
+prop.table(mytab)
+##or proportions per row or column...
+prop.table(mytab, margin=1)
+chisq.test(mytab)
+```
+
+- You can also split continuous variables by categorical ones and
+
+```{r boxplots}
+    par(mfrow=c(2,1))
+    boxplot(YR ~ FM, data=case2002)
+    boxplot(AG ~ FM, data=case2002)
+```
+ 
+In the code below we change the levels so that cancer is the *risk* group.  
+```{r fixlevs}
+     # Reorder the levels so that the model is for log odds of cancer
+     case2002$LC <- factor(case2002$LC, levels=c("NoCancer","LungCancer"))    
+     myGlm <- glm(LC ~ FM + SS + AG + YR + CD + BK, family=binomial, data=case2002)
+     summary(myGlm)
+     
+```
+It appears that there's an effect of Years of Smoking and of Bird Keeping after accounting for other variables; no obvious effects of other variables
+
+**Exercise:** 
+
+- is the risk for cancer higher for men than for women?
+- how could you *check* that result using a two-way table?
+- discuss the terms in the model
+
+## Model building
+
+- Backward eliminiation is a method for model building that leaves out the least significant variable in the previous model, provided that *p*-value meets some minimal threshold, say less than $0.05$.
+
+- in the model above the least significant variable is SS, so
+we remove it and refit
+
+```{r logreg}    
+     # Logistic regression model building using backward elimination (witholding BK)
+     myGlm1 <- glm(LC ~ FM + AG + YR + CD + BK, family=binomial, data=case2002)
+     summary(myGlm1)
+```
+
+- next we would remove either FM or YR, the *p*-values are very similar.
+
+
+
+```{r}
+     
+     myGlm2 <- update(myGlm1, ~ . - YR)        
+     summary(myGlm2)
+```
+
+##Exercise
+ - repeat until only significant variables are in the model
+ 
+ - forward selection works the other way - you fit a model with each variable in turn and then pick the one that has the most signficiant coefficient
+ 
+ - step 2 in forward selection is to then fit models with that first variable and each of the others (so a two variable model)
+ and select the one that has the best fit
+ - repeat until no variables significantly improve the model
+ 
+
+
+## Interactions
+
+Sometimes the relationships between variables is not so simple.
+We might think that in our model the effect of birdkeeping is different for men and women, for example.
+
+```{r}
+     myGlm3 = glm(LC ~ FM + AG + CD + FM*BK + BK, family=binomial, data=case2002)
+     summary(myGlm3)
+ 
+```
+
+So what happened here?
+We added an interaction term and suddenly our main effects seem to go away.  This is typical of situations where the covariates in the model are correlated.  Adding a variable, or taking one out, changes all the coefficients.
+
+The usual interpretation of $\beta_j$, that it is a the change in logit for a one unit change in the $j^{th}$ covariate, with all others held constant is problematic.  As we noted for the relationship between AG and YR, if AG increases then so does YR for any smoker.
+
+If we had a big enough cohort (think NHANES or UKBB) then we could try to look at the effect of changes in YR for a subanalysis where we keep age constant (or close to constant).
+
+You could say take people between 48 and 52, and then fit a model with YR, but not include AG since you really restricted the range and see if YR is important.  You could do it the other way, take some range of YR, then fit a model with AG but not YR and see what the AG coefficient is.
+
+These challenges are the really hard part of being a statistician (and probably a data scientist as well).  They matter quite a lot as we give substantial advice on risks and behaviour to the population, we should try to be sure we are correctly interpreting the data at hand.
+
+And of course, one really needs replication (see below) in an independent data set to help ensure validity.
+
+```{r, eval=FALSE}
+     
+     ## INFERENCE AND INTERPRETATION
+     myGlm5 <- update(myGlm4, ~ . + BK, data=case2002)    # Now add bird keeping
+     summary(myGlm5)
+
+
+  ## INFERENCE AND INTERPRETATION
+     myGlm5 <- update(myGlm4, ~ . + BK, data=case2002)    # Now add bird keeping
+     summary(myGlm5)
+     myGlm6 <- update(myGlm5, ~ . + BK:YR + AG:YR, data=case2002) # Try interaction terms
+     anova(myGlm6,myGlm5) # Drop-in-deviance = 1.61 on 2 d.f.
+     1 - pchisq(1.61,2)    # p-value = .45: no evidence of interaction
+     anova(myGlm4,myGlm5)   # Test for bird keeping effect
+     (1 - pchisq(12.612,1))/2  # 1-sided p-value: 0.0001916391
+      
+     case2002$BK <- factor(case2002$BK, levels=c("NoBird", "Bird"))  # Make "no bird" the ref level
+     myGlm5b <- glm(LC ~ AG + YR + BK, family=binomial, data=case2002)   
+     beta <- myGlm5b$coef  # Extract estimated coefficients
+     exp(beta[4])   # 3.961248                
+     exp(confint(myGlm5b,4))   # 1.836764 8.900840  
+     # Interpretation: The odds of lung cancer for people who kept birds were 
+     # estimated to be 4 times the odds of lung cancer for people of similar age, sex, 
+     # smoking history, and socio-economic status who didn't keep birds
+     # (95% confidence interval for this adjusted odds ratio: 1.8 times to 8.9 times).
+     
+     # See bestglm library for an alternative variable selection technique. 
+
+
+```
+
+## And the study replicated...
+
+- but there are other studies that failed to replicate...so how do we figure out what the real truth is
+
+![](BirdsLungcancer.png)

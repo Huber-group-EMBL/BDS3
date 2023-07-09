@@ -12,13 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Download and Process the Data
 
 FIXME:  we should update this to more modern workflows.
-Somehow there is no filtering going on, wrt, the counts matrix, which should
-be made smaller.
-
-I am not convinced that denoisePCA is doing what the author thinks it is.
-For the PCA the genes provide direction, but the variation we are modeling is wrt between cell
-distances (not about variation within gene across cells, which seems to be
-what is being used).
+Somehow there is no filtering going on, wrt, the counts matrix, which should be made smaller.
 
 ```{r, echo=FALSE}
 library(DropletTestFiles)

@@ -13,7 +13,7 @@ library(kableExtra)
 library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
-
+library(plotly)
 ```
 
 ## Introduction
@@ -379,7 +379,7 @@ plot(density(exprs9["PPBP",]), main="PPBP")
 
 ```
 
-## One more plot
+## Plot all four genes by groups
 
 ```{r, echo=FALSE}
 vv = colData(sc_exp_norm_trans)
@@ -391,6 +391,30 @@ colData(sc_exp_norm_trans) = vv
 plotExpression(sc_exp_norm_trans, features=names(topsdbyg9)[1:4], x="clusters", colour_by="clusters")
 ```
 
+## Parallel Coordinate Plots
+
+```{r parallelCoord, echo=FALSE, warning=FALSE}
+
+exprs9S = data.frame(as.matrix(t(exprs9[names(topsdbyg9)[1:4],])))
+
+fig <- exprs9S %>% plot_ly(type = 'parcoords',
+          line = list(color = 'blue'),
+          dimensions = list(
+            list(range=c(0,11), label = 'PPBP', values = ~PPBP),
+            list(range=c(0,11), label = 'PF4', values = ~PF4),
+            list(range=c(0,11), label = 'HIST1H2AC', 
+                 values = ~HIST1H2AC),
+            list(range=c(0,11), label = 'GNG11', values = ~GNG11)
+            )
+          )
+
+fig
+```
+- one issue with this plot is that any points that have the same values across all the variables appear as one line
+- 50 of the 114 are zero for all four genes
+```{r rowSums, eval=FALSE, echo=TRUE}
+table(rowSums(exprs9S)==0)
+```
 ## PC6 vs PC1
 
 ```{r, echo=FALSE}
