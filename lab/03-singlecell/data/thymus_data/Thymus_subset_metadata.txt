@@ -1,0 +1,3 @@
+File	Sample	Donor	Tissue	Sort	Method	Age	Source	Gender
+T03_TH_TOT_5GEX_2_S2	T03_TH_TOT_5GEX_2	T03	TH	TOT	5GEX	10m	Newcastle	Female
+FCAImmP8105202	A45_THY_TOT_5GEX_1	A45	TH	TOT	5GEX	19y	CBTM	Male
