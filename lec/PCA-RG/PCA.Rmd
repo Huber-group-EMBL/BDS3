@@ -298,6 +298,20 @@ pct_var
 - think back to the earlier comment that it could be useful to test if those later values are all equal...
 
 ## LM on Clusters
+
+Here we consider a set of models, one for each PC, where we ask how much of the variation in the PC is explained by the clusters
+
+The variables $1_Cj$ are indicator functions, there are 1 if the
+$i^{th}$ observation is is in the $j^{th}$ cluster and 0 otherwise
+
+$$
+ PC_l = \beta_1 \cdot 1_{C1} + \cdots + \beta_k \cdot 1_{Ck}
+$$
+We can fit this model for each of some selected number of PCs.
+
+From the output above we probably only need to consider the first 10 PCs
+
+## Output of LM
 <font size="3">
 ```{r, echo=FALSE}
 ##Subclusters is the set of clusters

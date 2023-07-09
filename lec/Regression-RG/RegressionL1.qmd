@@ -80,7 +80,7 @@ Countries with access to safe water breast feed for less time.
 
 ## Causation
 
--   often, as in the example above, there is a third variable (clean water) that affects both the response and the predictor
+-   often, as in the example above, there is a third variable (access to clean water) that affects both the response and the predictor
 -   to get at causation we typically need a randomized controlled experiment
 -   we cannot always do experiments, eg most epidemiology
 
@@ -150,7 +150,7 @@ summary(lm1)
      \sum_{i=1}^n (y_i - \hat{y}_i)^2
     $$
 
--   this method is called *least squares* and was discovered by Gauss in 1822
+-   this method is called *least squares* and was described by Gauss in 1822
 
 ## The estimates are random...
 
@@ -159,6 +159,14 @@ summary(lm1)
     $$
 -   where we use $Y$ and $X$ to represent the fact that data came from some form of sample from a population we want to make inference about
 -   usually we will assume $\epsilon \sim N(0, \sigma^2)$ are independent (but that is not strictly necessary)
+
+## Simulation Experiments
+
+- one tool that you can use to understand how different methods work is to create a simulation experiment
+
+- in these experiments you create a model, where you know the answer, and you control the variability or stochastic component
+
+- then you can interpret the way in which the different quantities you are estimating behave
 
 ## Simulation Experiment
 
@@ -197,7 +205,7 @@ for( i in 1:NITER) {
 ```
 
 -   we repeatedly sample from a Normal distribution with `sd=1.5` and create a new $y$
--   then we estimate the paramters for that model, and save them
+-   then we estimate the parameters for that model, and save them
 
 ## Plots
 
@@ -291,6 +299,7 @@ plot(lm1$model$`infdeath$breast`, lm1$residuals, xlab="Proportion of Mothers Bre
 abline(h=0)
 ```
 
+
 ## Extensions - non-linear models
 
 -   fitting straight lines is fine, most of the time
@@ -372,6 +381,73 @@ predict(lm1, newdata=list(breast=62), interval="confidence")
 
 ```{r, echo=TRUE}
 predict(lm1, newdata=list(breast=62), interval="prediction")
+```
+
+## Factors - and their role in regression
+
+- a *factor* is a variable that takes on a discrete set of different values
+
+- these values can be unordered, e.g. Male/Female or European, Asian, African, etc.
+
+- or they can be ordered, age: less than 18, 18-40, more than 40
+
+- we typically implement factors using *dummy variables*
+
+- essentially we create a new set of variables using indicator functions, $1_{Ai} = 1$ if observation $i$ has the level $A$.
+
+## Fitting factors in regression models
+
+- suppose we have a factor with $K$ levels
+
+- we can fit factors in two ways
+    - **M1:** includes an intercept in the model and then use $K-1$ indicator variables 
+    - **M2L=:** no intercept and use $K$ indicator variables.
+    
+- in **M1** we the intercept is the mean value of $y$, and each $\beta_j$ is the difference in mean for the $j^{th}$ retained factor level from the overall mean.
+
+- in **M2** each of the $\beta_j$ is the mean value for $y$ only within factor level $j$
+
+## Regression with factors
+
+- simple example, suppose our factor is sex, which has two levels, M and F, then
+
+$$
+  M1:  Y = \beta_0 + \beta_M \cdot 1_{M} + \epsilon \\
+  E[Y | F]= \beta_0 \quad \mbox{and} \quad E[Y|M] = \beta_0 + \beta_M
+$$
+
+Or
+$$ 
+  M2: y = \beta_M \cdot 1_{M} + \beta_{F} \cdot 1_{F} + \epsilon \\
+  E[Y|F] = \beta_F \quad \mbox{and} E[Y|M] = \beta_M
+$$
+
+## Small warning
+
+- there are some issues you have to worry about when fitting a model without an intercept
+
+- in these models the test for each group, $H_0: \beta_j = 0$ is then comparing the mean for that group to zero (0)
+
+- with a model that has an intercept then for each group the test for $H_0: \beta_j = 0$ tests whether that group mean is different from the mean for the group that was used to determine the intercept.
+
+- in the first of these, multiple-$R^2$ does not have a reasonable interpretation.
+
+
+## Example{.smaller}
+
+```{r FMreg}
+heights = runif(40, min=60, max=75)
+sex = sample(c("M","F"), 40, replace=TRUE)
+lm1 = lm(heights ~ sex)
+summary(lm1)
+```
+
+## Example con't{.smaller}
+
+
+```{r FMreg2}
+lm2 = lm(heights ~ sex - 1)
+summary(lm2)
 ```
 
 ## Other Resources

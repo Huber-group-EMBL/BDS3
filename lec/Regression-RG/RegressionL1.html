@@ -450,7 +450,7 @@
 <section id="causation" class="slide level2">
 <h2>Causation</h2>
 <ul>
-<li>often, as in the example above, there is a third variable (clean water) that affects both the response and the predictor</li>
+<li>often, as in the example above, there is a third variable (access to clean water) that affects both the response and the predictor</li>
 <li>to get at causation we typically need a randomized controlled experiment</li>
 <li>we cannot always do experiments, eg most epidemiology</li>
 </ul>
@@ -534,7 +534,7 @@ F-statistic: 25.94 on 1 and 12 DF,  p-value: 0.000265</code></pre>
 <li><p>then one strategy is to minimize the sum of squared prediction errors <span class="math display">\[
 \sum_{i=1}^n (y_i - \hat{y}_i)^2
 \]</span></p></li>
-<li><p>this method is called <em>least squares</em> and was discovered by Gauss in 1822</p></li>
+<li><p>this method is called <em>least squares</em> and was described by Gauss in 1822</p></li>
 </ul>
 </section>
 <section id="the-estimates-are-random" class="slide level2">
@@ -545,6 +545,14 @@ Y = \beta_0 + \beta_1 \cdot X + \epsilon
 \]</span></li>
 <li>where we use <span class="math inline">\(Y\)</span> and <span class="math inline">\(X\)</span> to represent the fact that data came from some form of sample from a population we want to make inference about</li>
 <li>usually we will assume <span class="math inline">\(\epsilon \sim N(0, \sigma^2)\)</span> are independent (but that is not strictly necessary)</li>
+</ul>
+</section>
+<section id="simulation-experiments" class="slide level2">
+<h2>Simulation Experiments</h2>
+<ul>
+<li><p>one tool that you can use to understand how different methods work is to create a simulation experiment</p></li>
+<li><p>in these experiments you create a model, where you know the answer, and you control the variability or stochastic component</p></li>
+<li><p>then you can interpret the way in which the different quantities you are estimating behave</p></li>
 </ul>
 </section>
 <section id="simulation-experiment" class="slide level2">
@@ -598,7 +606,7 @@ F-statistic: 59.15 on 1 and 18 DF,  p-value: 4.275e-07</code></pre>
 </div>
 <ul>
 <li>we repeatedly sample from a Normal distribution with <code>sd=1.5</code> and create a new <span class="math inline">\(y\)</span></li>
-<li>then we estimate the paramters for that model, and save them</li>
+<li>then we estimate the parameters for that model, and save them</li>
 </ul>
 </section>
 <section id="plots" class="slide level2">
@@ -820,6 +828,102 @@ F-statistic: 25.94 on 1 and 12 DF,  p-value: 0.000265</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>       fit      lwr      upr
 1 63.96593 10.08279 117.8491</code></pre>
+</div>
+</div>
+</section>
+<section id="factors---and-their-role-in-regression" class="slide level2">
+<h2>Factors - and their role in regression</h2>
+<ul>
+<li><p>a <em>factor</em> is a variable that takes on a discrete set of different values</p></li>
+<li><p>these values can be unordered, e.g.&nbsp;Male/Female or European, Asian, African, etc.</p></li>
+<li><p>or they can be ordered, age: less than 18, 18-40, more than 40</p></li>
+<li><p>we typically implement factors using <em>dummy variables</em></p></li>
+<li><p>essentially we create a new set of variables using indicator functions, <span class="math inline">\(1_{Ai} = 1\)</span> if observation <span class="math inline">\(i\)</span> has the level <span class="math inline">\(A\)</span>.</p></li>
+</ul>
+</section>
+<section id="fitting-factors-in-regression-models" class="slide level2">
+<h2>Fitting factors in regression models</h2>
+<ul>
+<li><p>suppose we have a factor with <span class="math inline">\(K\)</span> levels</p></li>
+<li><p>we can fit factors in two ways</p>
+<ul>
+<li><strong>M1:</strong> includes an intercept in the model and then use <span class="math inline">\(K-1\)</span> indicator variables</li>
+<li><strong>M2L=:</strong> no intercept and use <span class="math inline">\(K\)</span> indicator variables.</li>
+</ul></li>
+<li><p>in <strong>M1</strong> we the intercept is the mean value of <span class="math inline">\(y\)</span>, and each <span class="math inline">\(\beta_j\)</span> is the difference in mean for the <span class="math inline">\(j^{th}\)</span> retained factor level from the overall mean.</p></li>
+<li><p>in <strong>M2</strong> each of the <span class="math inline">\(\beta_j\)</span> is the mean value for <span class="math inline">\(y\)</span> only within factor level <span class="math inline">\(j\)</span></p></li>
+</ul>
+</section>
+<section id="regression-with-factors" class="slide level2">
+<h2>Regression with factors</h2>
+<ul>
+<li>simple example, suppose our factor is sex, which has two levels, M and F, then</li>
+</ul>
+<p><span class="math display">\[
+  M1:  Y = \beta_0 + \beta_M \cdot 1_{M} + \epsilon \\
+  E[Y | F]= \beta_0 \quad \mbox{and} \quad E[Y|M] = \beta_0 + \beta_M
+\]</span></p>
+<p>Or <span class="math display">\[
+  M2: y = \beta_M \cdot 1_{M} + \beta_{F} \cdot 1_{F} + \epsilon \\
+  E[Y|F] = \beta_F \quad \mbox{and} E[Y|M] = \beta_M
+\]</span></p>
+</section>
+<section id="small-warning" class="slide level2">
+<h2>Small warning</h2>
+<ul>
+<li><p>there are some issues you have to worry about when fitting a model without an intercept</p></li>
+<li><p>in these models the test for each group, <span class="math inline">\(H_0: \beta_j = 0\)</span> is then comparing the mean for that group to zero (0)</p></li>
+<li><p>with a model that has an intercept then for each group the test for <span class="math inline">\(H_0: \beta_j = 0\)</span> tests whether that group mean is different from the mean for the group that was used to determine the intercept.</p></li>
+<li><p>in the first of these, multiple-<span class="math inline">\(R^2\)</span> does not have a reasonable interpretation.</p></li>
+</ul>
+</section>
+<section id="example" class="slide level2 smaller">
+<h2>Example</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = heights ~ sex)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-7.7290 -3.4115  0.5925  3.7202  5.9065 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  68.0986     0.9463  71.966   &lt;2e-16 ***
+sexM          0.2882     1.3060   0.221    0.827    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.125 on 38 degrees of freedom
+Multiple R-squared:  0.00128,   Adjusted R-squared:  -0.025 
+F-statistic: 0.04871 on 1 and 38 DF,  p-value: 0.8265</code></pre>
+</div>
+</div>
+</section>
+<section id="example-cont" class="slide level2 smaller">
+<h2>Example con’t</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = heights ~ sex - 1)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-7.7290 -3.4115  0.5925  3.7202  5.9065 
+
+Coefficients:
+     Estimate Std. Error t value Pr(&gt;|t|)    
+sexF  68.0986     0.9463   71.97   &lt;2e-16 ***
+sexM  68.3868     0.9001   75.98   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 4.125 on 38 degrees of freedom
+Multiple R-squared:  0.9965,    Adjusted R-squared:  0.9964 
+F-statistic:  5476 on 2 and 38 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div>
 </section>
