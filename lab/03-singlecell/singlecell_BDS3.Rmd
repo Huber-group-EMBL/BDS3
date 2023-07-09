@@ -1,6 +1,6 @@
 ---
 title: "Single-cell RNA-seq workflow"
-subtitle: "BDS3 Version"
+subtitle: "BDS^3"
 author:
     - name: Davide Risso
       affiliation: 
@@ -60,7 +60,7 @@ In this section we focus on EDA/QC steps that are typical in a single-cell analy
 We start by considering a dataset on Peripheral Blood Mononuclear Cell (PBMC) data from a healthy donor provided by 10X Genomics. We use the [DropletTestFiles Bioconductor package](https://bioconductor.org/packages/DropletTestFiles/) to download the raw (i.e., unfiltered) count matrix that contains the UMI counts of all genes in all droplets.
 
 ```{r}
-library(DropletTestFiles)
+library("DropletTestFiles")
 raw.path <- getTestFile("tenx-2.1.0-pbmc4k/1.0.0/raw.tar.gz")
 out.path <- file.path(tempdir(), "pbmc4k")
 untar(raw.path, exdir=out.path)
@@ -389,72 +389,6 @@ Again, we can compute the tSNE embedding using the PCs.
 ```{r}
 sce.pbmc <- runTSNE(sce.pbmc, dimred="PCA")
 plotTSNE(sce.pbmc)
-```
-
-## Count-based models
-
-One problem of PCA is that it assumes continuous, roughly Gaussian data, while single-cell RNA-seq data are counts.
-
-Computing the PCs on the log-normalized counts helps, but it can be shown that it is not always effective and in some cases technical features, such as sequencing depth, can affect the first PCs [@hicks2018missing].
-
-Hence, it may be better to use count-based factor analysis models for dimentionality reduction. One advantage of these methods is that they can be applied directly to count data, without need for normalization and data transformation, which can be challenging.
-
-We will see two alternative approaches:
-
-- GLM-PCA based on a Poisson distribution [@townes2019feature]
-- NewWave based on a Negative Binomial distribution [@agostinis2022newwave]
-
-In both cases, we will start from the HVGs selected previously.
-
-## GLM-PCA
-
-GLM-PCA is implemented in the `scry` Bioconductor package; it uses a Poisson model by default, but this can be changed to use negative binomial, multinomial or binomial.
-
-Unlike `runPCA`, the GLM-PCA function does not allow for a selection of genes. Hence, we will first create a filtered `SingleCellExperiment` object that contains only the HVGs.
-
-Similarly to PCA, GLM-PCA needs the number of components (factors) that need to be calculated. Here, we compute 10 latent factors.
-
-We use the `minibatch` argument to use only a random subset of observations to compute the gradient in the optimization algorithm. This speeds up computations and avoids memory problems in big datasets.
-
-```{r}
-library(scry)
-set.seed(100000)
-filtered <- sce.pbmc[top.pbmc,]
-filtered <- GLMPCA(filtered, L=10, minibatch="stochastic")
-filtered
-```
-
-To visualize the first two components of GLM-PCA, we can use the `plotReducedDim` function from `scater`.
-
-```{r}
-plotReducedDim(filtered, "GLMPCA")
-```
-
-## NewWave
-
-An alternative method is implemented in the `NewWave` package, which implements a negative binomial factor analysis model and uses a  penalized likelihood to estimate the latent factors.
-
-Also in this case we can use minibatches, and if multiple CPUs are available parallel computing, to speed up computations. The `n_gene_par`, `n_cell_par`, and `n_gene_disp` arguments allow the user to choose how many observations to use to estimate the gene- and cell-specific parameters. The `children` argument allows one to use multiple cores; here we use four, but you should change it depending on how many cores your computer has (see `parallel::detectCores()`).
-
-```{r}
-library(NewWave)
-set.seed(100000)
-filtered <- newWave(filtered, K=10, children=4,
-                    n_gene_disp = 100, n_gene_par = 100, 
-                    n_cell_par = 100)
-filtered
-```
-
-```{r}
-plotReducedDim(filtered, "newWave")
-```
-
-For visualization, it is also possible to compute the tSNE embedding of the 10-dimensional GLM-PCA or newWave representation.
-
-```{r}
-set.seed(2242)
-filtered <- runTSNE(filtered, dimred="GLMPCA")
-plotTSNE(filtered)
 ```
 
 # Cell type assignment
