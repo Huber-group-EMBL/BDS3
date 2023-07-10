@@ -531,6 +531,11 @@ smoothScatter(pcs[,6], assays(sc_exp_norm_trans)$logcount["JUN",])
 
 *Here, we show that the AP-1 transcription factor components, i.e. JUN, JUNB, FOS, FOSB, in addition to DUSP1, EGR1, NR4A1, IER2 and BTG2, behave as a conserved co-regulated group of genes whose expression is associated to ZFP36 in cancer cells.*
 
+## What else can you do?
+
+- you could choose some threshold value for PC6 and defined stressed cells as those having a value larger than that threshold
+- then you could use this to color cells in your UMAP or t-SNE plots
+
 
 ## Zero fractions
 - Irizarry find a strong correlation between PC1 and the fraction of genes not detected 
