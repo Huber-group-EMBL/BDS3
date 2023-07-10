@@ -535,7 +535,7 @@ smoothScatter(pcs[,6], assays(sc_exp_norm_trans)$logcount["JUN",])
 
 - you could choose some threshold value for PC6 and defined stressed cells as those having a value larger than that threshold
 - then you could use this to color cells in your UMAP or t-SNE plots
-
+- and you could imagine using some, potentially scaled in some way, as a signature for cell stress (if we validate that the signal we are seeing in more experiments)
 
 ## Zero fractions
 - Irizarry find a strong correlation between PC1 and the fraction of genes not detected 
