@@ -13,25 +13,34 @@ library("tidyverse")
 
 1. git clone repository https://github.com/Huber-group-EMBL/BDS3 again 
 
-2. read into the cell type count data.
+2. read the single cell count data.
+
 ```{r}
-data = read.csv("data/Perez_2022_cell_type_counts.csv")
+perez = read.csv("data/Perez_2022_cell_type_counts.csv")
+head(perez)
+```
+
+3. Explore the following columns in the data: `SampleID`, `Age`, `Age_group` and `manual_anno2`. How many different unique values do they have? 
+
+```{r}
+table(perez$SampleID) # what do you think this function is doing?
+```
+
+4. We want to quantify change in the abundance of the following populations with age: `MF-I`, `MF-II`, `MYH8+`, `MuSC`. Subset the data to these populations. Start by caculating number of cells of each type in every sample.  
+
+```{r}
 
 ```
 
-3. Explore the following columns in the data: 'SampleID', 'Age', 'Age_group' and 'manual_anno2'. How many different unique values they have? 
-```{r}
-table(data$SampleID) # what do you think this function is doing?
 
-```
+4. Do a t-test to test for changes in the abundance with age using `Age` as a binary covariate. What do you observe? Which populations are significantly differentially abundant with age?
 
-4. We want to quantify change in the abundance of the following populations with age: "MF-I", "MF-II", "MYH8+", "MuSC".Subset the data to the following populations. Start by caculating number of cells of each type in every sample.  
 ```{r}
 
 ```
 
+5. Fit a linear model to quantify change in the abundance with age using `Age` as a continous covariate. How do the results compare?
 
-4. Run the linear model to quantify change in the abundance with age using Age as a binary covariate. What do you observe? Which populations are significantly differentially abudnant with age? 
 ```{r}
 
 ```
