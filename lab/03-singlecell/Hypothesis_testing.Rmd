@@ -11,7 +11,7 @@ library("tidyverse")
 
 ```
 
-1. git clone repository https://github.com/Huber-group-EMBL/BDS3 again 
+1. Clone, or update your existing clone, of the GitHub repository https://github.com/Huber-group-EMBL/BDS3 
 
 2. read the single cell count data.
 
