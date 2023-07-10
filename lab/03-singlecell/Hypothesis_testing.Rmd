@@ -15,9 +15,7 @@ library("tidyverse")
 
 2. read into the cell type count data.
 ```{r}
-#setwd("/home/jovyan/BDS3/")
-data_path = "BDS3/lab/03-singlecell/data/Perez_2022_cell_type_counts.csv"
-data = read.csv("/home/jovyan/BDS3/lab/03-singlecell/data/Perez_2022_cell_type_counts.csv")
+data = read.csv("data/Perez_2022_cell_type_counts.csv")
 
 ```
 
