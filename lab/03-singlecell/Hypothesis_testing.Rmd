@@ -1,0 +1,41 @@
+---
+title: "Hypothesis_testing"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+
+```
+
+1. git clone repository https://github.com/Huber-group-EMBL/BDS3 again 
+
+2. read into the cell type count data.
+```{r}
+#setwd("/home/jovyan/BDS3/")
+data_path = "BDS3/lab/03-singlecell/data/Perez_2022_cell_type_counts.csv"
+data = read.csv("/home/jovyan/BDS3/lab/03-singlecell/data/Perez_2022_cell_type_counts.csv")
+
+```
+
+3. Explore the following columns in the data: 'SampleID', 'Age', 'Age_group' and 'manual_anno2'. How many different unique values they have? 
+```{r}
+table(data$SampleID) # what do you think this function is doing?
+
+```
+
+4. We want to quantify change in the abundance of the following populations with age: "MF-I", "MF-II", "MYH8+", "MuSC".Subset the data to the following populations. Start by caculating number of cells of each type in every sample.  
+```{r}
+
+```
+
+
+4. Run the linear model to quantify change in the abundance with age using Age as a binary covariate. What do you observe? Which populations are significantly differentially abudnant with age? 
+```{r}
+
+```
+
+
