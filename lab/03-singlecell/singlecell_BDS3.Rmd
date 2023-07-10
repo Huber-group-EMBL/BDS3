@@ -388,6 +388,8 @@ Finally, note that by default `scater` will compute the top 50 PCs. This is a re
 plotPCA(sce.pbmc)
 ```
 
+## tSNE
+
 Again, we can compute the tSNE embedding using the PCs. 
 
 ```{r}
@@ -538,4 +540,3 @@ sessionInfo()
 ```
 
 # References
-
