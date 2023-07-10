@@ -26,7 +26,7 @@ head(perez)
 table(perez$SampleID) # what do you think this function is doing?
 ```
 
-4. We want to quantify change in the abundance of the following populations with age: `MF-I`, `MF-II`, `MYH8+`, `MuSC`. Subset the data to these populations. Start by caculating number of cells of each type in every sample.  
+4. We want to quantify change in the abundance of the following populations with age: `MF-I`, `MF-II`, `MYH8+`, `MuSC`. Subset the data to these populations. Start by calculating the number of cells of each type in every sample.  
 
 ```{r}
 
