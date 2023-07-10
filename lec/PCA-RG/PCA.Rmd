@@ -327,20 +327,30 @@ lm1 = lm(pc1~clusters-1)
 boxplot(pc1~clusters, ylab="PC1", main="PC1 scores by Cluster Assignment")
 ```
 
-## Is there info in the PCs we have not used?
+- note that this shows PC1 is essentially a contrast between a subset of the clusters
+
+## Is there info in the PCs we have not used?{.smaller}
+
 - we regress each PC in turn against the cluster labels and get the multiple R2
 - for each regression, the multiple R2 tells us about how much of the variation in that PC is explained by the clusters
-- if that value is especially low, as it is for PC6 below - then that dimension is not really reflecting the clustering
-- PC4 is also potentially interesting so we will have a look at it as well
-```{r, echo=FALSE}
+- if that value is especially low, as it is for PC6 below - then that dimension is not really reflecting the clustering - something else is driving the variability in that direction
+
+
+```{r, echo=TRUE}
 multR2 = sapply(1:9, function(x) {
   summary(lm(pcs[,x]~ clusters - 1))$adj.r.squared
 })
 round(multR2, digits=4)
-
 ```
 
-## What does this look like?
+## Multiple $R^2$ per PC
+
+```{r plotPCR2, echo=FALSE}
+plot(1:9, round(multR2, digits=4), xlab="PC", ylab= "Prop. Var. Explained", pch=19)
+```
+
+## First PC4
+
 - we plot PC4 vs PC1 
 - what is that set of unusual looking points?
 ```{r, echo=FALSE}
@@ -358,20 +368,9 @@ plot(pcs[,4], pcs[,1], xlab="PC4", ylab="PC1", col=v1)
 clusters[abs(pcs[,4])>15]
 table(clusters)
 ```
-- so we see that somehow PC4 is capturing a large amount of variation with cluster 9 
-- we should probably try to track down what is happening there
+- so we see that somehow PC4 is capturing a large amount of variation **within** cluster 9 
+- we will track down what is happening there
 
-## The rotation matrix...
-
-- above we concentrated on the transformed features
-- but the rotations are also interesting
-- they tell us about the "loadings" on each of the genes for each PC
-- in the exam example we noted how the different rotations were things like the mean of the exam scores, or contrasts between exams
-```{r echo=TRUE}
-rotation = attr(reducedDims(sc_exp_norm_trans)$PCA, "rotation")
-gn = row.names(rotation)
-gn[1:10]
-```
 
 ## PC4
 
@@ -407,6 +406,17 @@ plotExpression(sc_exp_norm_trans, features=names(topsdbyg9)[1:4], x="clusters", 
 
 ## Parallel Coordinate Plots
 
+- a parallel coordinate plot is one way of showing very high dimensional data
+- each dimension is encoded as a vertical line (so $k$-dimensional data has $k$ lines)
+- each point $\bf{x} = (x_1, x_2, \ldots, x_k) is represented as a horizontal line, which joins the values $x_j$ to $x_{j+1}$
+- important considerations include
+    - order of the axis
+    - scaling of each axis
+    - any rotations
+- one additional issue is that data points that share the same value for all displayed dimensions will occlude each other
+
+## Our Data for the four genes
+
 ```{r parallelCoord, echo=FALSE, warning=FALSE}
 
 exprs9S = data.frame(as.matrix(t(exprs9[names(topsdbyg9)[1:4],])))
@@ -426,17 +436,82 @@ fig
 ```
 - one issue with this plot is that any points that have the same values across all the variables appear as one line
 - 50 of the 114 are zero for all four genes
-```{r rowSums, eval=FALSE, echo=TRUE}
+
+## Rescale by square root - often good for counts
+
+```{r parallelCoord2, echo=FALSE, warning=FALSE}
+
+exprs9Ssq = sqrt(exprs9S)
+
+
+fig <- exprs9Ssq %>% plot_ly(type = 'parcoords',
+          line = list(color = 'blue'),
+          dimensions = list(
+            list(range=c(0,sqrt(11)), label = 'PPBP', values = ~PPBP),
+            list(range=c(0,sqrt(11)), label = 'PF4', values = ~PF4),
+            list(range=c(0,sqrt(11)), label = 'HIST1H2AC', 
+                 values = ~HIST1H2AC),
+            list(range=c(0,sqrt(11)), label = 'GNG11', values = ~GNG11)
+            )
+          )
+
+fig
+```
+
+```{r rowSums, eval=FALSE, echo=FALSE}
 table(rowSums(exprs9S)==0)
 ```
+
 ## PC6 vs PC1
 
 ```{r, echo=FALSE}
 plot(pcs[,6], pcs[,1], xlab="PC6", ylab="PC1", col=v1)
 ```
-- no correlation with zero fraction
+
+- no correlation of PC6 with zero fraction
 - no correlation with sizeFactor
-- looked at the loadings in the rotation matrix, four genes really stand out JUN, DUSP1, FOS and JUNB
+- let's look at the loadings in the rotation matrix
+
+
+## The rotation matrix...
+
+- above we concentrated on the transformed features
+- but the rotations are also interesting
+- they tell us about the "loadings" on each of the genes for each PC
+- in the exam example we noted how the different rotations were things like the mean of the exam scores, or contrasts between exams
+```{r echo=TRUE}
+rotation = attr(reducedDims(sc_exp_norm_trans)$PCA, "rotation")
+gn = row.names(rotation)
+gn[1:10]
+```
+
+## What sort of values do we have in this rotation matrix
+
+- the rotation tells us how the different features are weighted in creating the sixth PC
+- we can see that four genes have very large (relative to the others) weights
+- so they are important and likely drive the values in PC6
+```{r echo=TRUE}
+sort(abs(rotation[,6]),dec=TRUE)[1:10]
+```
+
+## A little more about the rotation
+
+- first see if the values are all positive, negative or a mixture
+- look to see what the most negative loadings are
+```{r rotVals, echo=TRUE}
+rotation[c("JUN", "FOS","JUNB","DUSP1"),6]
+sort(rotation[,6],dec=FALSE)[1:10]
+```
+
+## What does expression of these genes look like{.smaller}
+
+- extract the expression values and do a pairs plot
+```{r, echo=FALSE}
+exprsR6 = assays(sc_exp_norm_trans)$logcounts[c("JUN", "FOS","JUNB","DUSP1"), ]
+exprsR6 = t(as.matrix(exprsR6))
+pairs(exprsR6, pch=".")
+```
+
 
 ## PC6 correlates with JUN/JUNB/FOS/DUSP1 expression
 
@@ -444,6 +519,18 @@ plot(pcs[,6], pcs[,1], xlab="PC6", ylab="PC1", col=v1)
 smoothScatter(pcs[,6], assays(sc_exp_norm_trans)$logcount["JUN",])
 
 ```
+
+## What does ChatGPT think?
+
+- prompt: Do the genes FOS and DUSP1 interact and if so, how?
+- redacted output: FOS interacts with JUN and JUNB to form the AP-1 transcription factor complex, which activates DUSP1 and other genes in the list of the ones with high loadings on rotation 6
+- *FOS is an immediate early gene that encodes a transcription factor known as c-Fos. It is typically induced rapidly in response to various extracellular stimuli, such as growth factors, hormones, and stress signals.*
+- from a google search:
+•	DOI: 10.1007/s10911-020-09448-1
+
+
+*Here, we show that the AP-1 transcription factor components, i.e. JUN, JUNB, FOS, FOSB, in addition to DUSP1, EGR1, NR4A1, IER2 and BTG2, behave as a conserved co-regulated group of genes whose expression is associated to ZFP36 in cancer cells.*
+
 
 ## Zero fractions
 - Irizarry find a strong correlation between PC1 and the fraction of genes not detected 
@@ -454,10 +541,6 @@ smoothScatter(pcs[,6], assays(sc_exp_norm_trans)$logcount["JUN",])
  lmzf = lm(pc1~clusters-1+zeroFrac)
 ```
 
-##doublets?
-```{r doublets, echo=TRUE}
-lmDoublets = lm(pc1~clusters-1+sc_exp_norm_trans$subsets_Mito_percent)
-```
 ## Results
 
 <font size="3">
@@ -612,3 +695,11 @@ Here $\bf{U}$ and $\bf{V}$ are $N × p$ and $p × p$ orthogonal matrices, with t
 The SVD of the centered matrix $\bf{X}$ is another way of expressing the principal components of the variables in $\bf{X}$. The sample covariance matrix is given by $S = X^TX/N$, and we have
 $$X^T X = VD^2V^T,$$
 which is the eigen decomposition of $\bf{X}^T\bf{X}$ (and of $\bf{S}$, up to a factor $N$). The eigenvectors $v_j$ (columns of $\bf{V}$) are also called the principal components directions of $\bf{X}$. The first principal component direction $v_1$ has the property that $z_1 = X \cdot v_1$ has the largest sample variance amongst all normalized linear combinations of the columns of $\bf{X}$.
+
+
+## doublets?
+
+somehow lost the doublet code
+```{r doublets, echo=TRUE, eval=FALSE}
+lmDoublets = lm(pc1~clusters-1+sc_exp_norm_trans$subsets_Mito_percent)
+```
