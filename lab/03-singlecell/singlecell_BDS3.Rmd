@@ -10,8 +10,8 @@ bibliography: biblio.bib
 output: BiocStyle::html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache = FALSE, error = FALSE, message = FALSE,
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, error = FALSE, message = FALSE,
                       warning = FALSE, echo = TRUE, results = "markup",
                       fig.align = "center", collapse = TRUE)
 ```
@@ -61,13 +61,13 @@ We start by considering a dataset on Peripheral Blood Mononuclear Cell (PBMC) da
 
 ```{r}
 library("DropletTestFiles")
-raw.path <- getTestFile("tenx-2.1.0-pbmc4k/1.0.0/raw.tar.gz")
-out.path <- file.path(tempdir(), "pbmc4k")
-untar(raw.path, exdir=out.path)
+raw.path = getTestFile("tenx-2.1.0-pbmc4k/1.0.0/raw.tar.gz")
+out.path = file.path(tempdir(), "pbmc4k")
+untar(raw.path, exdir = out.path)
 
-library(DropletUtils)
-fname <- file.path(out.path, "raw_gene_bc_matrices/GRCh38")
-sce.pbmc <- read10xCounts(fname, col.names=TRUE)
+library("DropletUtils")
+fname = file.path(out.path, "raw_gene_bc_matrices/GRCh38")
+sce.pbmc = read10xCounts(fname, col.names=TRUE)
 sce.pbmc
 ```
 The `read10xCounts` function starts from the output of the Cell Ranger software and imports the data into R as an object of class `SingleCellExperiment`.
@@ -85,16 +85,18 @@ class(counts(sce.pbmc))
 Before starting the analysis, it may be a good idea to store the names of the genes in a more human-friendly ID system. We can also include information on the chromosome location of the genes; this will be useful for e.g. identifying mitochondrial genes.
 
 ```{r}
-library(scuttle)
-rownames(sce.pbmc) <- uniquifyFeatureNames(
+library("scuttle")
+rownames(sce.pbmc) = uniquifyFeatureNames(
     rowData(sce.pbmc)$ID, rowData(sce.pbmc)$Symbol)
 
-library(EnsDb.Hsapiens.v86)
-rowData(sce.pbmc)$location <- mapIds(EnsDb.Hsapiens.v86,
-                                     keys=rowData(sce.pbmc)$ID, 
-                                     column="SEQNAME", keytype="GENEID")
+library("EnsDb.Hsapiens.v86")
+rowData(sce.pbmc)$location = mapIds(EnsDb.Hsapiens.v86,
+                                     keys    = rowData(sce.pbmc)$ID, 
+                                     column  = "SEQNAME", 
+                                     keytype = "GENEID")
 rowData(sce.pbmc)
 ```
+
 **Exercise**: compute the proportion of zero for each droplet (column) and draw the distribution across the dataset.
 
 ## Empty droplets
@@ -105,16 +107,16 @@ The reason why these droplets contain some RNA is that there may be some ambient
 
 The `barcodeRanks` function can be used to rank the barcodes by number of UMIs and to estimate the knee and inflection point of the distribution.
 
-```{r}
-bcrank <- barcodeRanks(counts(sce.pbmc))
+```{r plotbcrank}
+bcrank = barcodeRanks(counts(sce.pbmc))
 
 # Only showing unique points for plotting speed.
-uniq <- !duplicated(bcrank$rank)
+uniq = !duplicated(bcrank$rank)
 plot(bcrank$rank[uniq], bcrank$total[uniq], log="xy",
     xlab="Rank", ylab="Total UMI count", cex.lab=1.2)
 
-abline(h=metadata(bcrank)$inflection, col="darkgreen", lty=2)
-abline(h=metadata(bcrank)$knee, col="dodgerblue", lty=2)
+abline(h = metadata(bcrank)$inflection, col = "darkgreen",  lty=2)
+abline(h = metadata(bcrank)$knee,       col = "dodgerblue", lty=2)
 
 legend("bottomleft", legend=c("Inflection", "Knee"), 
         col=c("darkgreen", "dodgerblue"), lty=2, cex=1.2)
@@ -128,27 +130,28 @@ We can apply a statistical test of hypothesis to decide, for each droplet, if it
 
 We use a very low threshold on the False Discovery Rate to have very few false positive cells.
 
-```{r}
+```{r e.out}
 set.seed(100)
-e.out <- emptyDrops(counts(sce.pbmc))
+e.out = emptyDrops(counts(sce.pbmc))
 summary(e.out$FDR <= 0.001)
 ```
 
 The large majority of droplets are not tested, since by default all droplets with fewer than 100 UMIs are considered empty.
 
 ```{r}
-table(colSums(counts(sce.pbmc)) > 100, e.out$FDR <= 0.001, useNA="ifany")
+table(colSums(counts(sce.pbmc))>100, e.out$FDR <= 0.001, useNA = "ifany")
 ```
 
 We can now proceed by removing the empty droplets and keep only the ones identified to be cells.
 
 ```{r}
-sce.pbmc <- sce.pbmc[, which(e.out$FDR <= 0.001)]
+sce.pbmc = sce.pbmc[, which(e.out$FDR <= 0.001)]
 sce.pbmc
 ```
+
 ## Data exploration
 
-We will see in more details in the next section how to perform accurate dimensionality reduction. Here, we quickly perform a principal component analysis (PCA) and t-SNE embedding to explore the data and highlight possible quality issues for some cells.
+We will see in more detail in the next section how to perform accurate dimensionality reduction. Here, we quickly perform a principal component analysis (PCA) and t-SNE embedding to explore the data and highlight possible quality issues for some cells.
 
 These embeddings can be quickly computed using the `runPCA` and `runTSNE` functions in `scater`. It is useful to log transform the data before PCA to more accurately reflect the signal.
 
@@ -157,20 +160,20 @@ The `logNormCounts` function divides by the total number of UMIs in addition to 
 We will need to recompute these embeddings after filtering and proper normalization to obtain a more accurate representation of our data.
 
 ```{r}
-library(scater)
-sce.pbmc <- logNormCounts(sce.pbmc)
-sce.pbmc <- runPCA(sce.pbmc)
-sce.pbmc <- runTSNE(sce.pbmc, dimred="PCA")
+library("scater")
+sce.pbmc = logNormCounts(sce.pbmc)
+sce.pbmc = runPCA(sce.pbmc)
+sce.pbmc = runTSNE(sce.pbmc, dimred = "PCA")
 sce.pbmc
 ```
 
-Note that it is generally a good strategy to start from PCA to compute the tSNE embedding; this is achieved using the `dimred` argument.
+Note that it is generally a good strategy to start from PCA to compute the t-SNE embedding; this is achieved using the `dimred` argument.
 
 **Exercise**: Explore the `logcounts` accessor and the `assayNames`, `assays` and `assay` methods to extract the original counts and the log-normalized counts from the object; explore the `reducedDimNames` and `reducedDim` methods to explore the PCA and t-SNE embedding.
 
 We can visualize the first two PCs and the tSNE embedding using the following `scater` functions.
 
-```{r}
+```{r plotPCA}
 plotPCA(sce.pbmc)
 plotTSNE(sce.pbmc)
 ```
@@ -185,30 +188,29 @@ This is justified by the fact that mitochondiral genes are involved in biologica
 
 The `perCellQCMetrics` function can be used to compute a set of metrics useful to evaluate the quality of the samples. The `isOutlier` function uses a data driven threshold to define cells of lower quality compared to the rest of the dataset.
 
-```{r}
-is.mt <- rowData(sce.pbmc)$location == "MT"
-stats <- perCellQCMetrics(sce.pbmc, subsets=list(Mito=which(is.mt)))
-high.mito <- isOutlier(stats$subsets_Mito_percent, type="higher")
+```{r high.mito}
+stats = perCellQCMetrics(sce.pbmc,
+            subsets=list(Mito=which(rowData(sce.pbmc)$location=="MT")))
+high.mito = isOutlier(stats$subsets_Mito_percent, type="higher")
 table(high.mito)
 ```
 
 Finally, it is convenient to include this information in the `colData` of the object, e.g. to use it in plotting functions.
 
 ```{r}
-colData(sce.pbmc) <- cbind(colData(sce.pbmc), stats)
-sce.pbmc$discard <- high.mito
+colData(sce.pbmc) = cbind(colData(sce.pbmc), stats)
+sce.pbmc$discard = high.mito
 
-plotColData(sce.pbmc, y="subsets_Mito_percent", colour_by="discard")
-plotColData(sce.pbmc, y="detected", colour_by="discard")
-plotColData(sce.pbmc, x="sum", y="subsets_Mito_percent", 
-  colour_by="discard") + scale_x_log10()
+plotColData(sce.pbmc, y = "subsets_Mito_percent", colour_by = "discard")
+plotColData(sce.pbmc, y = "detected",             colour_by = "discard")
+plotColData(sce.pbmc, x = "sum", y = "subsets_Mito_percent", colour_by = "discard") + scale_x_log10()
 ```
 
 We can also color-code the cells by the QC metrics and/or by the indicator that we defined in the PCA and tSNE plots.
 
 ```{r}
-plotTSNE(sce.pbmc, colour_by="subsets_Mito_percent")
-plotTSNE(sce.pbmc, colour_by="discard")
+plotTSNE(sce.pbmc, colour_by = "subsets_Mito_percent")
+plotTSNE(sce.pbmc, colour_by = "discard")
 ```
 
 We can see that there are a few cells with high mitochondrial reads scattered around two clusters. In addition, there seems to be a cluster made of only high-mitochondrial cells. It is unclear whether this is a technical artifact due to sample processing or a genuine PBMC cell population that expresses more mitochondrial genes. 
@@ -216,7 +218,7 @@ We can see that there are a few cells with high mitochondrial reads scattered ar
 In this tutorial, we go ahead and remove these cells, but in a real analysis, careful thought must be given to whether these metrics are capturing technical noise or biological signal.
 
 ```{r}
-sce.pbmc <- sce.pbmc[, !high.mito]
+sce.pbmc = sce.pbmc[,!high.mito]
 sce.pbmc
 ```
 
@@ -228,16 +230,16 @@ Since we have a heterogeneous cell population, we perform a quick clustering to 
 
 ```{r}
 library(scran)
-cl <- quickCluster(sce.pbmc)
+cl = quickCluster(sce.pbmc)
 table(cl)
-sce.pbmc <- computeSumFactors(sce.pbmc, clusters=cl)
+sce.pbmc = computeSumFactors(sce.pbmc, clusters = cl)
 summary(sizeFactors(sce.pbmc))
 ```
 
 The function returns a `SingleCellExperiment` object with the estimated size factors stored in the `colData`. To actually normalize the data, we can use the `logNormCounts` function that will use the size factors stored in the object to normalize the data and save the log-normalized counts as a second assay in the object.
 
 ```{r}
-sce.pbmc <- logNormCounts(sce.pbmc)
+sce.pbmc = logNormCounts(sce.pbmc)
 sce.pbmc
 ```
 
@@ -259,7 +261,7 @@ We now have a `SingleCellExperiment` object with only the high-quality cells. We
 In fact, many of the genes that we stored in the object have no UMI in any cell. We can easily verify that by looking at the number of zero counts in each cell.
 
 ```{r}
-summary(colMeans(counts(sce.pbmc) == 0))
+summary(colMeans(counts(sce.pbmc)==0))
 ```
 
 On average, 96% of the genes have 0 UMIs in a given cell.
@@ -273,9 +275,9 @@ summary(rowMeans(counts(sce.pbmc) == 0))
 Hence, we can start off by removing those genes that are 0 across the board.
 
 ```{r}
-allzero <- rowMeans(counts(sce.pbmc) == 0) == 1
+allzero = rowMeans(counts(sce.pbmc)==0)==1
 table(allzero)
-sce.pbmc <- sce.pbmc[which(!allzero), ]
+sce.pbmc = sce.pbmc[which(!allzero),]
 sce.pbmc
 ```
 
@@ -291,15 +293,15 @@ The simplest approach to quantifying per-gene variation is to compute the varian
 
 ```{r}
 set.seed(1001)
-dec.pbmc <- modelGeneVar(sce.pbmc)
+dec.pbmc = modelGeneVar(sce.pbmc)
 head(dec.pbmc)
 ```
 At any given abundance, we assume that the variation in expression for most genes is driven by uninteresting processes like sampling noise. Under this assumption, the fitted value of the trend at any given gene’s abundance represents an estimate of its uninteresting variation, which we call the technical component. We then define the biological component for each gene as the difference between its total variance and the technical component. This biological component represents the "interesting" variation.
 
 ```{r}
 plot(dec.pbmc$mean, dec.pbmc$total, pch=16, cex=0.5,
-  xlab="Mean of log-expression", ylab="Variance of log-expression")
-curfit <- metadata(dec.pbmc)
+    xlab="Mean of log-expression", ylab="Variance of log-expression")
+curfit = metadata(dec.pbmc)
 curve(curfit$trend(x), col='dodgerblue', add=TRUE, lwd=2)
 ```
 
@@ -307,7 +309,7 @@ The `modelGeneVar` function tests the null hypothesis that the biological compon
 We can select the genes using a threshold on the adjusted p-values or simply ranking them by biological variation and selecting the top one or two thousand.
 
 ```{r}
-top.pbmc <- getTopHVGs(dec.pbmc, n=1000)
+top.pbmc = getTopHVGs(dec.pbmc, n=1000)
 head(top.pbmc)
 ```
 
@@ -321,10 +323,10 @@ Note that while we use a droplet terminology here, doublets can be observed in d
 
 ```{r}
 library(scDblFinder)
-dbl.dens <- computeDoubletDensity(sce.pbmc, 
+dbl.dens = computeDoubletDensity(sce.pbmc, 
   subset.row=top.pbmc, 
   d=ncol(reducedDim(sce.pbmc)))
-sce.pbmc$DoubletScore <- dbl.dens
+sce.pbmc$DoubletScore = dbl.dens
 summary(dbl.dens)
 ```
 
@@ -346,7 +348,7 @@ plotTSNE(sce.pbmc, colour_by="DoubletScore")
 We can define a threshold to identify putative doublets.
 
 ```{r}
-dbl.calls <- doubletThresholding(
+dbl.calls = doubletThresholding(
   data.frame(score=dbl.dens),
   method="griffiths",
   returnType="call")
@@ -358,7 +360,7 @@ And finally eliminate them from the dataset before continuing the analysis.
 Note that, similarly to what we have said for the removal of low-quality cells, one should be careful in removing putative doublets. Indeed, it may be difficult to distinguish between rare transient cell populations and doublet cells.
 
 ```{r}
-sce.pbmc <- sce.pbmc[, dbl.calls == "singlet"]
+sce.pbmc = sce.pbmc[, dbl.calls == "singlet"]
 sce.pbmc
 ```
 
@@ -375,7 +377,7 @@ We can always apply visualization techniques, such as tSNE or UMAP, on top of th
 We have already seen the simplest dimensionality reduction technique, PCA, in the previous section. Here, we can recalculate the principal components, starting from the data normalized by scran and using only the selected HVGs. This will lead to a better representation of our biological signal.
 
 ```{r}
-sce.pbmc <- runPCA(sce.pbmc, subset_row=top.pbmc)
+sce.pbmc = runPCA(sce.pbmc, subset_row=top.pbmc)
 ```
 
 Note that the `subset_row` argument ensures that we use the previously selected HVGs to compute the PCs. Also note that by default `runPCA` will store the PCs in the `PCA` slot, hence overwriting the previous PCs. In this case, this is what we want, as the previous results were based on a quick normalization and prior to removing noisy genes and cells. In other cases, it may be reasonable to keep more than one set of PCs: this can be achieved by specifying a different slot name via the `name` argument.
@@ -389,7 +391,7 @@ plotPCA(sce.pbmc)
 Again, we can compute the tSNE embedding using the PCs. 
 
 ```{r}
-sce.pbmc <- runTSNE(sce.pbmc, dimred="PCA")
+sce.pbmc = runTSNE(sce.pbmc, dimred="PCA")
 plotTSNE(sce.pbmc)
 ```
 
@@ -404,6 +406,7 @@ Typically, clustering is done on a low dimensional projection of the data, e.g.,
 
 On the other hand, reference annotation starts from normalized data.
 
+
 ## Clustering
 
 One of the most popular clustering methods for single-cell RNA-seq is the Louvain algorithm. This method starts from a cell network (graph), created by connecting cells that have shared nearest neighbors.
@@ -411,7 +414,7 @@ One of the most popular clustering methods for single-cell RNA-seq is the Louvai
 The first step is the creation of the _shared nearest neighbor graph_. Briefly, we start from the low dimensional representation of the data (e.g., by PCA) and construct a graph by linking cells that have neighbors in common. This is implemented in the `buildSNNgraph` function of the `scran` package; by default it uses `k=10` neighbors. 
 
 ```{r}
-g <- buildSNNGraph(sce.pbmc, k=10, use.dimred='PCA')
+g = buildSNNGraph(sce.pbmc, k=10, use.dimred='PCA')
 g
 ```
 We can use e.g., the `GGally` package to visualize the graph, but this is often not very useful due to the large number of nodes and edges.
@@ -424,14 +427,14 @@ We can then use the `igraph` package to identify communities (clusters) in the g
 
 ```{r}
 library(igraph)
-clust <- igraph::cluster_louvain(g)
+clust = igraph::cluster_louvain(g)
 ggnet2(g, color=membership(clust), size=1)
 ```
 
 Finally, we store the results into the `colData` of our object and visualize the clusters in the t-SNE plot.
 
 ```{r}
-sce.pbmc$Louvain <- factor(membership(clust))
+sce.pbmc$Louvain = factor(membership(clust))
 plotTSNE(sce.pbmc, colour_by="Louvain")
 ```
 
@@ -448,14 +451,14 @@ It is not important to perform a formal differential expression test for this st
 For this reason, we use simple methods, like a t-test that compares the average expression of one group versus the average of the others, and use the p-values only as a way to rank potentially interesting genes.
 
 ```{r}
-markers <- findMarkers(sce.pbmc, sce.pbmc$Louvain)
+markers = findMarkers(sce.pbmc, sce.pbmc$Louvain)
 head(markers[[1]])
 ```
 
 We can for instance extract the top 10 genes from each comparison to use as cluster-specific markers.
 
 ```{r}
-mm <- unique(unlist(lapply(markers, function(x) rownames(x)[1:10])))
+mm = unique(unlist(lapply(markers, function(x) rownames(x)[1:10])))
 plotGroupedHeatmap(sce.pbmc, features=mm, group="Louvain", center=TRUE)
 ```
 
@@ -474,7 +477,7 @@ The `celldex` Bioconductor package includes several annotated reference datasets
 ```{r}
 library(SingleR)
 library(celldex)
-ref <- MonacoImmuneData()
+ref = MonacoImmuneData()
 ref
 ```
 
@@ -487,7 +490,7 @@ colData(ref)
 It is straightforward to annotate our cells, by simply selecting our dataset, the reference dataset and the column that corresponds to the annotation that we want to use.
 
 ```{r}
-pred <- SingleR(test=sce.pbmc, ref=ref, 
+pred = SingleR(test=sce.pbmc, ref=ref, 
   labels=ref$label.main, assay.type.test="logcounts")
 head(pred)
 ```
@@ -502,7 +505,7 @@ plotScoreHeatmap(pred)
 We can include the predictions in the `SingleCellExperiment` object and visualize the results.
 
 ```{r}
-sce.pbmc$singler <- factor(pred$pruned.labels)
+sce.pbmc$singler = factor(pred$pruned.labels)
 plotTSNE(sce.pbmc, colour_by="singler")
 ```
 
