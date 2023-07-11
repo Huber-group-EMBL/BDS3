@@ -1,0 +1,44 @@
+---
+title: "Lab: Multivariate Analysis"
+subtitle: "BDS^3 Uzhhorod, Ukraine"
+author: "Wolfgang Huber, Susan Holmes. Updates by Helena Crowell"
+date: "11 July 2023"
+date-format: iso
+format:
+  revealjs: 
+    theme: wh.scss
+transition: slide
+scrollable: true
+slide-number: c/t
+show-slide-number: all
+auto-stretch: false
+code-line-numbers: false
+code-copy: true
+code-link: true
+code-block-bg: true
+code-block-border-left: "#31BAE9"
+dpi: 160
+df-print: kable
+fig-width: 5
+fig-height: 5
+fig-align: center
+highlight-style: pygments
+execute: 
+  echo: true
+warning: false
+error: false
+message: false
+slide-level: 1
+---
+  
+Load at the athletes' data
+
+```{r}
+#| label: ade4
+data("olympic", package = "ade4")
+athletes <- olympic$tab
+names(athletes) <- c("m100", "long", "weight", "highj", "m400", "m110", "disc", "pole", "javel", "m1500")
+head(athletes)  |>  format(digits=3, nsmall=2)
+```
+
+Make a PCA plot like in the MSMB book: <https://www.huber.embl.de/msmb/07-chap.html#a-complete-analysis-the-decathlon-athletes>
