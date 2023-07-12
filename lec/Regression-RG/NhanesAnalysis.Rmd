@@ -184,6 +184,8 @@ contd4sub = contd4sub[-c(1077, 2876, 2933),]
 d4sub = d4sub[-c(1077, 2876, 2933),]
 pcs = prcomp(contd4sub)
 
+pcvals=pcs$x
+
 ##which(abs(pcs$x[,1]) > 300)
 ##which(abs(pcs$x[,2]) > 100)
 ```
@@ -221,10 +223,72 @@ It might be good to get a sense of the relationship with the poverty level varia
  lmFx = lm(LBXTC ~ . , data=d5sub)
  summary(lmFx)
  
- ```
+```
  
+ Exercise:
+You can compare the two models using the `anova` function.
+Are the two models nested?
  
- ```{r}
+```{r, anova, eval=FALSE, echo=TRUE}
+anova(lmFx, lmF) 
+``` 
+
+**Exercise:**
+Plot RIDAGEYR versus INDFMPIR.
+What do you see in the plot?  Does anything cause you concern about fitting a linear model?
+
+Next let's try to fix out model to deal with the repeated values in these two variables.  Now an important consideration is to try and assess just how to interpret them.  For RIDAGEYR the documentation states that anyone over age 80 in the database has their age represented as 80.  This is not censoring.  The measurements (eg BMI, cholesterol etc.) were all made on a person of some age larger than 80.  We just Windsorized their ages, and so these individuals really are not the same as the others, where we are getting accurate age values. 
+
+One method to address this is the use of *Missing Indicators*, these are often used to deal with assays that have a limit of detection threshold.  The samples below the limit of detection are given some value, but they are not really the same as the measurements above the limit of detection.
+(https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6812630/)
+
+So basically what we want to do is to create a *dummy variable* for those whose age is reported as 80.
+
+```{r missingIndicator, echo=TRUE, eval=TRUE}
+
+Age80 = d5sub$RIDAGEYR == 80
+d6sub=cbind(d5sub, Age80)
+
+lmFx2  = lm(LBXTC ~ . + Age80 , data=d6sub)
+ summary(lmFx2)
+
+```
+**Exercise:**
+What changes do you notice in the model fit?
+Use the anova function to compare `lmFx3` to `lmFx2`.
+How do you interpret the output?
+<look at INDFMPIR>
+
+**Exercise:**
+Try to fit missing indicator variables for both of the repeated values in the INDFMPIR variable.
+Then interpret the output.
+
+```{r Poverty, echo=TRUE, eval=TRUE}
+Pov5 = d6sub$INDFMPIR == 5
+Pov0 = d6sub$INDFMPIR == 0
+d7sub = cbind(d6sub, Pov5, Pov0)
+
+lmFx2  = lm(LBXTC ~ . + Age80 + Pov0 + Pov5, data=d7sub)
+ summary(lmFx2)
+
+```
+
+It seems that some of the apparent effect of INDFMPIR seems to be related to the fact that we are not fitting RIDAGEYR properly.
+
+
+```{r}
  
- 
- ```
+ lmFx3 = lm(LBXTC ~ ns(RIDAGEYR, df=7)+ INDFMPIR+ LBDHDD+LBXGH + BMXBMI + Black + Age80 + Pov0 + Pov5, data=d7sub)
+ summary(lmFx3)
+```
+
+*Exercise::*
+
+In the code below, we drop the terms that were not statistically significant in the model and then compare this smaller model to the larger one, above.
+Interpret the results.
+```{r}
+lmFx4 = lm(LBXTC ~ ns(RIDAGEYR, df=7) + LBDHDD+LBXGH+Black, data=d7sub)
+summary(lmFx4)
+
+anova(lmFx4, lmFx3)
+```
