@@ -237,10 +237,17 @@ anova(lmFx, lmF)
 Plot RIDAGEYR versus INDFMPIR.
 What do you see in the plot?  Does anything cause you concern about fitting a linear model?
 
+## Missing Indicator Approach
+
+The missing indicator approach may be useful for data where there is a limit of detection, so that values below some lower bound $\alpha_L$ or above some upper bound $\alpha_U$ are set to $\alpha_L$ or to $\alpha_U$ respectively.  A similar approach can be used for the Windsorization used for RIDAGEYR variable, where values over 80 are set to 80.  We are not proposing using this for other types of missingness, although there is a righ literature and users may want to explore the broader use of this method.  However, it is important to realize that often bias or increased variance may obtain, often dependent on untestable assumptions.
+
+The reason that we believe this approach is appropriate for the cases listed is that we actually did measure the variable, and many over variables on those individuals, but we cannot report the exact value for any individual.  Hence, one can interpret the indicator as being some form of average over all individuals affected by the reporting limits.  It is probably worth noting that these limitations have implications for predication methods. While one in principle could estimate some outcome for an 88 year old person, the data won't support that prediction.  Instead one should ignore the linear predictor for age and use the indicator variable.
+Chiou *et al* (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6812630/) provide some rationale for logistic regression and the references therein point to results for linear regression. Groenwold *et al* (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3414599/) provide advice on more general use of the method to address missing data.
+
+
 Next let's try to fix out model to deal with the repeated values in these two variables.  Now an important consideration is to try and assess just how to interpret them.  For RIDAGEYR the documentation states that anyone over age 80 in the database has their age represented as 80.  This is not censoring.  The measurements (eg BMI, cholesterol etc.) were all made on a person of some age larger than 80.  We just Windsorized their ages, and so these individuals really are not the same as the others, where we are getting accurate age values. 
 
-One method to address this is the use of *Missing Indicators*, these are often used to deal with assays that have a limit of detection threshold.  The samples below the limit of detection are given some value, but they are not really the same as the measurements above the limit of detection.
-(https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6812630/)
+
 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3414599/)
 
 So basically what we want to do is to create a *dummy variable* for those whose age is reported as 80.
