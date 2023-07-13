@@ -241,6 +241,7 @@ Next let's try to fix out model to deal with the repeated values in these two va
 
 One method to address this is the use of *Missing Indicators*, these are often used to deal with assays that have a limit of detection threshold.  The samples below the limit of detection are given some value, but they are not really the same as the measurements above the limit of detection.
 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6812630/)
+(https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3414599/)
 
 So basically what we want to do is to create a *dummy variable* for those whose age is reported as 80.
 
